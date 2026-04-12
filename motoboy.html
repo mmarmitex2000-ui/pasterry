@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<!-- Playables SDK -->
+<script>// Playables SDK v1.0.0
+// Game lifecycle bridge: rAF-based game-ready detection + event communication
+(function() {
+  'use strict';
+
+  // Idempotency: skip if already initialized (e.g., server-side injection
+  // followed by client-side inject-javascript via the Bloks webview component).
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  // --- Transport Layer ---
+
+  function hasIOSBridge() {
+    return !!(window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] &&
+              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try {
+        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+      } catch (e) { /* ignore */ }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+    try {
+      var p = payload || {};
+      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+      window[ANDROID_BRIDGE_NAME].postEvent(
+        eventName,
+        JSON.stringify(p)
+      );
+    } catch (e) { /* ignore */ }
+    return;
+  }
+
+    if (isInIframe()) {
+      try {
+        window.parent.postMessage(message, '*');
+      } catch (e) { /* ignore */ }
+      return;
+    }
+  }
+
+  // --- rAF Game-Ready Detection ---
+
+  function onFrame() {
+    if (gameReadySent) return;
+
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', {
+        frame_count: frameCount,
+        detected_at: Date.now()
+      });
+      return;
+    }
+
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', {
+              frame_count: frameCount,
+              detected_at: Date.now()
+            });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  // --- First User Interaction Detection ---
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  // --- Auto Error Capture ---
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  // --- Public API ---
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', {
+        score: score,
+        completed: true
+      });
+    },
+
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', {
+        message: message || 'Unknown error',
+        auto_captured: false
+      });
+    },
+
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  // Kick off rAF detection in case no game code calls rAF immediately
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();</script>
+<script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<title>Motoboy - Pasterry</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: #000;
+    color: #0f0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    overscroll-behavior: none;
+  }
+  .wrap { max-width: 520px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+  header {
+    padding: 18px 16px;
+    text-align: center;
+    font-weight: 900;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #0f0;
+    text-shadow: 0 0 10px #0f0, 0 0 20px #0f0;
+    font-size: 1.1rem;
+    position: sticky;
+    top: 0;
+    background: #000;
+    z-index: 10;
+  }
+  main { padding: 20px 16px 40px; flex: 1; }
+  .center {
+    display: grid; place-items: center;
+    min-height: 60vh; font-size: 1.2rem;
+    opacity: .85; animation: pulse 1.4s infinite;
+    text-shadow: 0 0 8px #0f0;
+  }
+  @keyframes pulse { 0%,100%{opacity:.6} 50%{opacity:1} }
+  .card {
+    border: 1px solid #0f0;
+    border-radius: 16px;
+    padding: 18px;
+    background: rgba(0,255,0,0.04);
+    box-shadow: 0 0 20px rgba(0,255,0,.08) inset, 0 0 12px rgba(0,255,0,.12);
+    margin-bottom: 18px;
+  }
+  h1 { margin: 0 0 4px; font-size: 2rem; text-shadow: 0 0 12px #0f0; }
+  h2 { margin: 0 0 16px; font-size: 1.15rem; opacity: .9; font-weight: 600; }
+  .label { font-size: .75rem; opacity: .7; letter-spacing: 1.8px; margin-bottom: 8px; text-transform: uppercase; }
+  .pill {
+    display: inline-block; border: 1px solid #0f0; padding: 4px 10px;
+    border-radius: 999px; font-size: .75rem; margin-bottom: 10px;
+    box-shadow: 0 0 8px rgba(0,255,0,.4);
+  }
+  .btn {
+    display: block; width: 100%; text-align: center; padding: 20px 16px;
+    border-radius: 14px; font-weight: 900; font-size: 1.25rem;
+    text-decoration: none; cursor: pointer; border: 2px solid #0f0;
+    transition: transform .1s, opacity .2s; user-select: none;
+    margin: 10px 0; text-transform: uppercase; letter-spacing: 1px;
+    background: transparent; color: #0f0; text-shadow: 0 0 6px #0f0;
+  }
+  .btn:active { transform: scale(.98); }
+  .btn-primary {
+    background: #0f0; color: #000; border-color: #0f0;
+    box-shadow: 0 0 20px rgba(0,255,0,.7), 0 0 40px rgba(0,255,0,.35);
+    text-shadow: none;
+  }
+  .btn-primary:disabled { opacity: .6; }
+  .btn-ghost:active { background: rgba(0,255,0,.1); }
+  .btn-big { padding: 26px; font-size: 1.45rem; margin-top: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .dest-nome { font-size: 1.35rem; font-weight: 800; margin-bottom: 6px; text-shadow: 0 0 8px #0f0; }
+  .dest-end { line-height: 1.5; font-size: 1.05rem; }
+  .gps {
+    font-size: .95rem; line-height: 1.8; background: #000;
+    border: 1px dashed #0f0; padding: 12px; border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,255,0,.15) inset;
+  }
+  .gps b { float: right; opacity: .95; }
+  .status-dot {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    background: #0f0; box-shadow: 0 0 8px #0f0; margin-right: 6px;
+    animation: blink 1.2s infinite; vertical-align: middle;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+  .error { border-color: #f00; color: #f55; box-shadow: 0 0 12px rgba(255,0,0,.3); text-align: center; text-shadow: 0 0 6px #f00; }
+  .finalizado { text-align: center; padding: 40px 20px; }
+  .finalizado .check { font-size: 4.5rem; line-height: 1; text-shadow: 0 0 20px #0f0; margin-bottom: 16px; }
+  .hidden { display: none !important; }
+  .small { opacity: .7; font-size: .85rem; margin-top: 8px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>PASTERRY • MOTOBOY</header>
+  
+  <div id="loading" class="center">CARREGANDO PEDIDO...</div>
+  <div id="erro" class="card error hidden"></div>
+
+  <main id="app" class="hidden">
+    <div class="card">
+      <span class="pill">PEDIDO</span>
+      <h1>#<span id="pedidoId">---</span></h1>
+      <h2 id="clienteNome">---</h2>
+      <button id="btnIniciar" class="btn btn-primary">▶ INICIAR ENTREGA</button>
+      <div class="small">Ao iniciar, seu GPS ficará ativo e a tela permanecerá ligada</div>
+    </div>
+
+    <div id="destinoCard" class="card hidden">
+      <div class="label">📍 ENTREGAR EM</div>
+      <div class="dest-nome" id="destNome">-</div>
+      <div class="dest-end" id="destEnd">-</div>
+      <div id="destComp" class="dest-end" style="opacity:.7;margin-top:4px"></div>
+      
+      <div class="grid" style="margin-top:18px">
+        <a id="btnMaps" class="btn btn-ghost" target="_blank" rel="noopener">MAPS</a>
+        <a id="btnWaze" class="btn btn-ghost" target="_blank" rel="noopener">WAZE</a>
+      </div>
+      <a id="btnLigar" class="btn btn-ghost">📞 LIGAR CLIENTE</a>
+      
+      <button id="btnCheguei" class="btn btn-primary btn-big">✅ CHEGUEI NO CLIENTE</button>
+    </div>
+
+    <div id="gpsCard" class="card hidden">
+      <div class="label"><span class="status-dot"></span>GPS AO VIVO</div>
+      <div class="gps">
+        LAT: <b id="gpsLat">---</b><br>
+        LNG: <b id="gpsLng">---</b><br>
+        PRECISÃO: <b id="gpsAcc">---</b><br>
+        ATUALIZAÇÕES: <b id="gpsCount">0</b><br>
+        STATUS: <b id="gpsStatus">parado</b>
+      </div>
+    </div>
+
+    <div id="finalizadoCard" class="card finalizado hidden">
+      <div class="check">✅</div>
+      <h1>ENTREGA FINALIZADA</h1>
+      <p style="opacity:.85">Pedido entregue com sucesso.</p>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0",
+  authDomain: "paineldepedidos-8cfff.firebaseapp.com",
+  projectId: "paineldepedidos-8cfff",
+  storageBucket: "paineldepedidos-8cfff.appspot.com",
+  messagingSenderId: "390619980929",
+  appId: "1:390619980929:web:5bb015938e9dcb89389980"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const $ = (id) => document.getElementById(id);
+const loading = $('loading'), erro = $('erro'), appEl = $('app');
+const btnIniciar = $('btnIniciar'), btnCheguei = $('btnCheguei');
+const destinoCard = $('destinoCard'), gpsCard = $('gpsCard'), finalizadoCard = $('finalizadoCard');
+
+let watchId = null;
+let wakeLock = null;
+let contador = 0;
+let pedidoRef = null;
+let pedidoData = null;
+
+function showError(msg){
+  loading.classList.add('hidden');
+  erro.textContent = msg;
+  erro.classList.remove('hidden');
+}
+
+async function requestWakeLock(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => {});
+    }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(wakeLock !== null && document.visibilityState === 'visible'){
+    requestWakeLock();
+  }
+});
+
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+
+if(!id){
+  showError('ID do pedido não encontrado na URL. Use ?id=NUMERO');
+} else {
+  pedidoRef = doc(db, 'pedidos', id);
+  carregarPedido();
+}
+
+async function carregarPedido(){
+  try{
+    const snap = await getDoc(pedidoRef);
+    if(!snap.exists()){
+      showError('Pedido não encontrado');
+      return;
+    }
+    pedidoData = snap.data();
+    $('pedidoId').textContent = id;
+    $('clienteNome').textContent = pedidoData.cliente?.nome || 'Cliente';
+
+    const end = pedidoData.enderecoEntrega || pedidoData.endereco || {};
+    const nome = pedidoData.cliente?.nome || '';
+    $('destNome').textContent = nome;
+    const linha1 = [end.rua, end.numero].filter(Boolean).join(', ');
+    const linha2 = [end.bairro, end.cidade].filter(Boolean).join(' - ');
+    $('destEnd').textContent = [linha1, linha2].filter(Boolean).join(' • ') || 'Endereço não informado';
+    $('destComp').textContent = end.complemento ? `Compl: ${end.complemento}` : '';
+
+    const fullAddr = [end.rua, end.numero, end.bairro, end.cidade, end.estado].filter(Boolean).join(', ');
+    const q = encodeURIComponent(fullAddr || '');
+    $('btnMaps').href = `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+    $('btnWaze').href = `https://waze.com/ul?q=${q}&navigate=yes`;
+    
+    const tel = (pedidoData.cliente?.telefone || '').replace(/\D/g,'');
+    const btnLigar = $('btnLigar');
+    if(tel){
+      btnLigar.href = `tel:${tel}`;
+    } else {
+      btnLigar.classList.add('hidden');
+    }
+
+    if(pedidoData.status === 'entregue'){
+      loading.classList.add('hidden');
+      appEl.classList.remove('hidden');
+      btnIniciar.classList.add('hidden');
+      finalizadoCard.classList.remove('hidden');
+      return;
+    }
+
+    loading.classList.add('hidden');
+    appEl.classList.remove('hidden');
+
+  }catch(e){
+    console.error(e);
+    showError('Erro ao carregar pedido: ' + e.message);
+  }
+}
+
+function onPos(pos){
+  const { latitude, longitude, accuracy } = pos.coords;
+  contador++;
+  $('gpsLat').textContent = latitude.toFixed(6);
+  $('gpsLng').textContent = longitude.toFixed(6);
+  $('gpsAcc').textContent = Math.round(accuracy) + ' m';
+  $('gpsCount').textContent = contador;
+  $('gpsStatus').textContent = 'transmitindo';
+
+  updateDoc(pedidoRef, {
+    lat: latitude,
+    lng: longitude,
+    accuracy: Math.round(accuracy),
+    atualizadoEmMs: Date.now(),
+    status: 'entrega'
+  }).catch(console.error);
+}
+
+function onErr(err){
+  $('gpsStatus').textContent = 'erro: ' + err.message;
+}
+
+btnIniciar.addEventListener('click', async () => {
+  btnIniciar.disabled = true;
+  btnIniciar.textContent = 'INICIANDO GPS...';
+  await requestWakeLock();
+  
+  if(!('geolocation' in navigator)){
+    showError('GPS não suportado neste aparelho');
+    return;
+  }
+
+  destinoCard.classList.remove('hidden');
+  gpsCard.classList.remove('hidden');
+  $('gpsStatus').textContent = 'solicitando...';
+
+  watchId = navigator.geolocation.watchPosition(onPos, onErr, {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 20000
+  });
+
+  btnIniciar.textContent = 'EM ENTREGA';
+  btnIniciar.style.opacity = '.6';
+});
+
+btnCheguei.addEventListener('click', async () => {
+  if(!confirm('Confirmar entrega? O cliente recebeu o pedido?')){
+    return;
+  }
+  btnCheguei.disabled = true;
+  btnCheguei.textContent = 'FINALIZANDO...';
+
+  if(watchId !== null){
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  $('gpsStatus').textContent = 'finalizado';
+
+  try{
+    await updateDoc(pedidoRef, {
+      status: 'entregue',
+      entregueEm: serverTimestamp(),
+      lat: null,
+      lng: null,
+      accuracy: null,
+      atualizadoEmMs: Date.now()
+    });
+  }catch(e){
+    console.error(e);
+  }
+
+  if(wakeLock){
+    try{ await wakeLock.release(); }catch{}
+    wakeLock = null;
+  }
+
+  destinoCard.classList.add('hidden');
+  gpsCard.classList.add('hidden');
+  btnIniciar.classList.add('hidden');
+  finalizadoCard.classList.remove('hidden');
+
+  if(navigator.vibrate) navigator.vibrate(200);
+});
+</script>
+</body>
+</html>

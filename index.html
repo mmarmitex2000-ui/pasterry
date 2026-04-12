@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<!-- Playables SDK -->
+<script>// Playables SDK v1.0.0
+// Game lifecycle bridge: rAF-based game-ready detection + event communication
+(function() {
+  'use strict';
+
+  // Idempotency: skip if already initialized (e.g., server-side injection
+  // followed by client-side inject-javascript via the Bloks webview component).
+  if (window.playablesSDK) return;
+
+  var HANDLER_NAME = 'playablesGameEventHandler';
+  var ANDROID_BRIDGE_NAME = '_MetaPlayablesBridge';
+  var RAF_FRAME_THRESHOLD = 3;
+
+  var gameReadySent = false;
+  var firstInteractionSent = false;
+  var errorSent = false;
+  var frameCount = 0;
+  var originalRAF = window.requestAnimationFrame;
+
+  // --- Transport Layer ---
+
+  function hasIOSBridge() {
+    return !!(window.webkit &&
+              window.webkit.messageHandlers &&
+              window.webkit.messageHandlers[HANDLER_NAME]);
+  }
+
+  function hasAndroidBridge() {
+    return !!(window[ANDROID_BRIDGE_NAME] &&
+              typeof window[ANDROID_BRIDGE_NAME].postEvent === 'function');
+  }
+
+  function isInIframe() {
+    return !!(window.parent && window.parent !== window);
+  }
+
+  function sendEvent(eventName, payload) {
+    var message = {
+      type: eventName,
+      payload: payload || {},
+      timestamp: Date.now()
+    };
+
+    if (hasIOSBridge()) {
+      try {
+        window.webkit.messageHandlers[HANDLER_NAME].postMessage(message);
+      } catch (e) { /* ignore */ }
+      return;
+    }
+
+    if (hasAndroidBridge()) {
+    try {
+      var p = payload || {};
+      p.__secureToken = window.__fbAndroidBridgeAuthToken || '';
+      window[ANDROID_BRIDGE_NAME].postEvent(
+        eventName,
+        JSON.stringify(p)
+      );
+    } catch (e) { /* ignore */ }
+    return;
+  }
+
+    if (isInIframe()) {
+      try {
+        window.parent.postMessage(message, '*');
+      } catch (e) { /* ignore */ }
+      return;
+    }
+  }
+
+  // --- rAF Game-Ready Detection ---
+
+  function onFrame() {
+    if (gameReadySent) return;
+
+    frameCount++;
+    if (frameCount >= RAF_FRAME_THRESHOLD) {
+      gameReadySent = true;
+      sendEvent('game_ready', {
+        frame_count: frameCount,
+        detected_at: Date.now()
+      });
+      return;
+    }
+
+    originalRAF.call(window, onFrame);
+  }
+
+  if (originalRAF) {
+    window.requestAnimationFrame = function(callback) {
+      if (!gameReadySent) {
+        return originalRAF.call(window, function(timestamp) {
+          frameCount++;
+          if (frameCount >= RAF_FRAME_THRESHOLD && !gameReadySent) {
+            gameReadySent = true;
+            sendEvent('game_ready', {
+              frame_count: frameCount,
+              detected_at: Date.now()
+            });
+          }
+          callback(timestamp);
+        });
+      }
+      return originalRAF.call(window, callback);
+    };
+  }
+
+  // --- First User Interaction Detection ---
+
+  function setupFirstInteractionDetection() {
+    var events = ['touchstart', 'mousedown', 'keydown'];
+
+    function onFirstInteraction() {
+      if (firstInteractionSent) return;
+      firstInteractionSent = true;
+      sendEvent('user_interaction_start', null);
+
+      for (var i = 0; i < events.length; i++) {
+        document.removeEventListener(events[i], onFirstInteraction, true);
+      }
+    }
+
+    for (var i = 0; i < events.length; i++) {
+      document.addEventListener(events[i], onFirstInteraction, true);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupFirstInteractionDetection);
+  } else {
+    setupFirstInteractionDetection();
+  }
+
+  // --- Auto Error Capture ---
+
+  window.addEventListener('error', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    sendEvent('error', {
+      message: event.message || 'Unknown error',
+      source: event.filename || '',
+      lineno: event.lineno || 0,
+      colno: event.colno || 0,
+      auto_captured: true
+    });
+  });
+
+  window.addEventListener('unhandledrejection', function(event) {
+    if (errorSent) return;
+    errorSent = true;
+    var reason = event.reason;
+    sendEvent('error', {
+      message: (reason instanceof Error) ? reason.message : String(reason),
+      type: 'unhandled_promise_rejection',
+      auto_captured: true
+    });
+  });
+
+  // --- Public API ---
+
+  window.playablesSDK = {
+    complete: function(score) {
+      sendEvent('game_ended', {
+        score: score,
+        completed: true
+      });
+    },
+
+    error: function(message) {
+      if (errorSent) return;
+      errorSent = true;
+      sendEvent('error', {
+        message: message || 'Unknown error',
+        auto_captured: false
+      });
+    },
+
+    sendEvent: function(eventName, payload) {
+      if (!eventName || typeof eventName !== 'string') return;
+      sendEvent(eventName, payload);
+    }
+  };
+
+  // Kick off rAF detection in case no game code calls rAF immediately
+  if (originalRAF) {
+    originalRAF.call(window, onFrame);
+  }
+})();</script>
+
+<script>(function(){'use strict';if(window.playablesSDK)return;var n='playablesGameEventHandler',t='_MetaPlayablesBridge',e=3,r=!1,i=!1,o=!1,a=0,s=window.requestAnimationFrame;function c(){return!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers[n])}function u(){return!!(window[t]&&typeof window[t].postEvent==='function')}function l(){return!!(window.parent&&window.parent!==window)}function d(e,r){var i={type:e,payload:r||{},timestamp:Date.now()};if(c()){try{window.webkit.messageHandlers[n].postMessage(i)}catch(e){}return}if(u()){try{var o=r||{};o.__secureToken=window.__fbAndroidBridgeAuthToken||'',window[t].postEvent(e,JSON.stringify(o))}catch(e){}return}l()&&window.parent.postMessage(i,'*')}function f(){r||(a++,a>=e&&(r=!0,d('game_ready',{frame_count:a,detected_at:Date.now()})))}s&&(window.requestAnimationFrame=function(e){return r?s.call(window,e):s.call(window,function(n){a++,a>=e&&!r&&(r=!0,d('game_ready',{frame_count:a,detected_at:Date.now()})),e(n)})});var p=['touchstart','mousedown','keydown'];function h(){var e=p;function n(){i||(i=!0,d('user_interaction_start',null),e.forEach(function(e){document.removeEventListener(e,n,!0)}))}e.forEach(function(e){document.addEventListener(e,n,!0)})}'loading'===document.readyState?document.addEventListener('DOMContentLoaded',h):h(),window.addEventListener('error',function(e){o||(o=!0,d('error',{message:e.message||'Unknown',source:e.filename||'',lineno:e.lineno||0,colno:e.colno||0,auto_captured:!0}))}),window.addEventListener('unhandledrejection',function(e){if(!o){o=!0;var n=e.reason;d('error',{message:n instanceof Error?n.message:String(n),type:'unhandled_promise_rejection',auto_captured:!0})}}),window.playablesSDK={complete:function(e){d('game_ended',{score:e,completed:!0})},error:function(e){o||(o=!0,d('error',{message:e||'Unknown',auto_captured:!1}))},sendEvent:function(e,n){e&&'string'==typeof e&&d(e,n)}},s&&s.call(window,f)})();</script>
+<script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Pasterry</title>
+<style>
+:root{
+  --bg:#1A1210; --card:#E8F5E9; --accent:#07fcdb; --muted:#1A1210; --danger:#ac940d;
+  --glass: rgb(248, 252, 4); --ok:#2b7245;
+  --header-collapsed-h: 58px;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+.meus-pedidos{
+  background:#dc3545; color:#fff; position:absolute; left:12px; top:50%; transform:translateY(-50%);
+  z-index:70; padding:8px 14px; border:none; border-radius:10px; font-weight:800; font-size:14px;
+  cursor:pointer; box-shadow:0 4px 12px rgba(0,0,0,.35);
+}
+.meus-pedidos:active{ transform:translateY(-50%) scale(0.96); }
+html,body{height:100%;margin:0;background:linear-gradient(180deg,#1A1210 0%, #1A1210 60%);color:#e6eef6;-webkit-font-smoothing:antialiased; scroll-behavior: smooth;}
+.app{min-height:100vh;display:flex;flex-direction:column}
+html, body{ -ms-overflow-style: none; scrollbar-width: none; }
+html::-webkit-scrollbar, body::-webkit-scrollbar{ width: 0; height: 0; }
+header{
+  position: sticky; top: -155px; z-index: 60; display: grid; place-items: center;
+  padding: 15px 16px 10px; background: linear-gradient(180deg, #1A1210, rgba(7,20,40,0.85));
+  backdrop-filter: blur(8px); border-bottom: 1px solid #1A1210;
+}
+.brand{ display: flex; flex-direction: column; align-items: center; }
+.logo{
+  width: 120px; height: 120px; border-radius: 100px; overflow: hidden;
+  display:flex; align-items:center; justify-content:center;
+  background:#1A1210; box-shadow: 0 10px 30px #1A1210;
+  animation: logo-fade linear both; animation-timeline: scroll(); animation-range: 150px 250px;
+}
+.logo img{ width:100%; height:100%; object-fit:cover; display:block }
+@keyframes logo-fade { to { opacity: 0; transform: scale(0.7) translateY(-20px); filter: blur(4px); } }
+main{flex:1;display:flex;flex-direction:column;gap:12px;padding:10px 20px;box-sizing:border-box; padding-bottom: 90px;}
+
+.categories{
+  position: sticky; top: 0; z-index: 70; display: grid; grid-auto-flow: column; grid-auto-columns: 25%;
+  gap: 10px; overflow-x: auto; padding:12px 8px; background: #1A1210; border-radius:14px;
+  scrollbar-width:none; -ms-overflow-style:none; -webkit-overflow-scrolling: touch; scroll-snap-type: x mandatory;
+}
+.categories::-webkit-scrollbar{display:none}
+.cat { padding: 9px 15px; border-radius: 20px; font-size: 14px; min-width: 90px; scroll-snap-align: start;
+  background: var(--glass); display: flex; align-items: center; justify-content: center; cursor: pointer;
+  font-weight: 800; color: #1a1600; white-space: nowrap; text-align: center; transition: transform .08s ease;
+}
+.cat.active { outline: 3px solid var(--accent); box-shadow: 0 6px 20px rgba(0,0,0,0.5); transform: scale(1.05); }
+
+/* DESTAQUES - TAMANHO IGUAL AOS CARDS NORMAIS */
+.destaques{ margin: 16px 0 20px; }
+.destaques h2{ font-size:18px; font-weight:800; margin:0 0 10px 4px; color:#e6eef6; }
+.destaques-grid{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.destaque-card{
+  background:transparent;
+  border-radius:10px;
+  overflow:hidden;
+  cursor:pointer;
+  transition: transform .12s ease;
+}
+.destaque-card:active{ transform: scale(0.97); }
+.destaque-card .img-wrap{
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:10px;
+  overflow:hidden;
+  background:#0c1220;
+  position:relative;
+}
+.destaque-card .img-wrap img{
+  width:100%; height:100%; object-fit:cover; display:block;
+}
+.destaque-card .badge{
+  position:absolute; top:5px; left:5px;
+  background:rgba(0,0,0,0.85); color:#fff;
+  padding:2px 5px; border-radius:5px;
+  font-size:9px; font-weight:700;
+}
+.destaque-card .info{ padding:5px 1px 0; }
+.destaque-card .price{
+  font-size:12px; font-weight:800; color:#e6eef6; line-height:1.1;
+}
+.destaque-card .title{
+  font-size:10px; font-weight:600; color:#9aa6b2; margin-top:1px;
+  line-height:1.1; height:2.2em; overflow:hidden;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+
+.cat-section{ display:block; margin: 10px 4px 24px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); }
+.cat-section:first-child{ border-top: 0; margin-top: 0; }
+.cat-section > .muted{ font-weight: 800; letter-spacing: .3px; margin: 6px 4px 12px; opacity: .85; }
+.products{ display: grid; grid-template-columns: 1fr; gap: 12px; }
+.product{
+  background:linear-gradient(180deg, rgba(30, 30, 30, 0.02), rgba(25, 25, 25, 0.01)); padding:14px;
+  border-radius:20px; display:flex; flex-direction:row; gap:16px; align-items: center; overflow:hidden;
+  scroll-margin-top: 20px; border: 1px solid rgba(255,255,255,0.05);
+}
+.product .media{ position:relative; flex-shrink: 0; width: 120px; height: 120px; border-radius:12px; overflow:hidden; background:#0c1220; }
+.product .media > img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center; display:block; }
+.product .text-content { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.title{font-weight:700; font-size:18px; line-height: 1.2;}
+.price{color:var(--danger); font-weight:700; font-size:17px}
+.muted{color:#9aa6b2; font-size:13px; line-height: 1.3;}
+.product .info-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+.add-btn{ width: auto; padding:10px 20px; border-radius:8px; background:var(--ok); border:0; color:#fff; font-weight:800; cursor:pointer; flex-shrink: 0; }
+.add-btn:active{ transform: scale(0.97); filter: brightness(0.9); box-shadow: inset 0 3px 6px rgba(0,0,0,.25); }
+@media (max-width: 600px) {
+  
+}
+  main { padding: 10px; } .categories { grid-auto-columns: 33%; } .product .media { width: 100px; height: 100px; }
+
+
+
+.destaques-grid{ gap:10px; }
+.destaque-card{ padding:12px; gap:12px; }
+.destaque-card .img-wrap{ width:100px; height:100px; }
+.destaque-card .price{ font-size:15px; }
+.destaque-card .title{ font-size:14px; }
+
+
+
+
+
+
+#currentCat{ position: sticky; top: calc(var(--header-collapsed-h) + 8px); z-index: 69; }
+.products-wrap{ padding: 8px 6px 24px; }
+.content{display:flex;gap:18px}
+.left{flex:1;display:flex;flex-direction:column;min-width:0}
+.btn{flex:1; padding:14px; border-radius:10px; border:0; background:var(--glass); color:#1a1600; cursor:pointer; font-weight:800; font-size:16px}
+.btn.secondary{background:var(--glass); color:#1a1600; opacity:.9}
+.btn:disabled{opacity:.6; cursor:not-allowed}
+.overlay{position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:80; backdrop-filter: blur(4px);}
+.dialog{width:840px; max-width:95%; background:#272323; border-radius:12px; padding:20px; display:flex; gap:12px; box-shadow:0 20px 60px rgba(2,6,23,0.8)}
+.left-panel{flex:1; display:flex; flex-direction:column; gap:10px}
+.kbd{display:grid; grid-template-columns:repeat(3,1fr); gap:8px}
+.kbd button{padding:18px 12px; font-size:20px; border-radius:10px; background:var(--glass); border:1px solid rgba(255,255,255,0.03); color:#eaf6f2}
+.num-display{font-size:40px; background:#021522; padding:12px; border-radius:10px; text-align:right; color:var(--accent); font-weight:800}
+.attract{position:fixed; inset:0; background-image:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.6)); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:100; overflow:hidden}
+.attract.hidden{display:none}
+.attract h1{font-size:56px; margin:0 0 10px; color:var(--accent)}
+.attract p{color:var(--muted); font-size:22px; margin:0 0 20px}
+.big-btn{padding:18px 30px; border-radius:14px; background:var(--accent); color:#022; font-weight:900; font-size:20px; border:0; cursor:pointer}
+@media (max-width:900px){ main{gap:10px} .content{flex-direction:column} }
+@media (max-height:760px){ .logo{ width:100px; height:100px } header{top: -130px;} }
+button:focus{outline:3px solid rgba(221, 2, 2, 0.12)}
+button,.btn,.big-btn,.cat{ transition: transform .08s ease, box-shadow .12s ease, filter .12s ease }
+button:active,.btn:active,.big-btn:active,.cat:active{ transform:scale(0.97); filter:brightness(0.96); box-shadow:inset 0 6px 14px rgba(0,0,0,.25) }
+.press{ animation: pressPop .18s ease }
+@keyframes pressPop{ 0%{transform:scale(1)} 40%{transform:scale(0.95)} 100%{transform:scale(1)} }
+.size-image-wrap{width:260px; display:flex; flex-direction:column; gap:10px; align-items:stretch}
+.size-image{width:100%; height:180px; object-fit:cover; border-radius:12px; background:#0c1220; box-shadow:0 10px 30px rgba(0,0,0,.5)}
+#toastWrap{ position:fixed; left:0; right:0; top:14px; z-index:120; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none }
+.toast{ pointer-events:auto; display:flex; align-items:center; gap:10px; background:rgba(7,20,40,.92); color:#e6eef6; border:1px solid rgba(255,255,255,.06); box-shadow:0 10px 30px rgba(0,0,0,.5); padding:12px 14px; border-radius:12px; min-width:280px; max-width:90vw; transform:translateY(-12px); opacity:0; animation:toastIn .18s ease forwards, toastOut .18s ease forwards 1.6s }
+.toast.check{ width:28px; height:28px; border-radius:8px; background:var(--ok); display:grid; place-items:center; font-weight:900; color:#fff }
+.toast.title{ font-weight:800; font-size:15px; line-height:1.2 }
+.toast.sub{ color:var(--muted); font-size:13px }
+@keyframes toastIn{ to{ transform:translateY(0); opacity:1 } }
+@keyframes toastOut{ to{ transform:translateY(-8px); opacity:0 } }
+.footer-bar{ position:fixed; left:0; right:0; bottom:0; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); background:linear-gradient(180deg, rgba(7,20,40,0.0), rgba(7,20,40,0.85) 30%, rgba(7,20,40,0.95)); backdrop-filter:blur(6px); border-top:1px solid rgba(255,255,255,0.06); z-index:70 }
+.footer-cart{ width:100%; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:14px 16px; border-radius:14px; background:var(--danger); color:#fff; font-weight:900; font-size:18px; border:0; cursor:pointer; box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 -2px 0 rgba(0,0,0,.15) }
+.footer-cart .cart-ico{ display:grid; place-items:center }
+.footer-cart .cart-label{ flex:1; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+.footer-cart .cart-total{ font-weight:900; margin-right:8px; white-space:nowrap }
+.footer-cart .cart-badge{ min-width:28px; height:28px; padding:0 8px; border-radius:999px; display:inline-flex; align-items:center; justify-content:center; background:rgba(0,0,0,.25); color:#fff; font-weight:900; font-size:14px; box-shadow:inset 0 -2px 0 rgba(0,0,0,.2) }
+@media (max-width:380px){ .footer-cart .cart-label{ display:none } }
+</style>
+</head>
+<body>
+  <div id="toastWrap" aria-live="polite" aria-atomic="true"></div>
+  <div class="overlay" id="successOverlay" aria-hidden="true" style="display:none">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="successTitle" style="max-width:640px; flex-direction:column; align-items:center; text-align:center; gap:14px">
+      <img id="successImg" src="img/sucesso.png" alt="Pedido finalizado com sucesso" style="width:220px;height:220px;object-fit:contain;border-radius:16px;background:#021522;box-shadow:0 10px 30px rgba(0,0,0,.5)">
+      <div id="successTitle" style="font-weight:900;font-size:24px;color:var(--accent)">Pedido confirmado!</div>
+      <div class="muted" id="successMsg" style="font-size:15px">Seu pedido foi enviado para a cozinha e estÃ¡ sendo impresso.</div>
+      <button class="btn" id="okSuccess" type="button" style="width:220px">OK</button>
+    </div>
+  </div>
+  <div id="printArea" aria-hidden="true"></div>
+  <div class="app" id="app">
+  <header>
+  <button class="meus-pedidos" id="btnPedidos" onclick="location.href='status.html'">Meus Pedidos</button>
+    <div class="brand" role="banner">
+      <div class="logo" aria-hidden="true"><img src="img/logo.jpg" alt="Logo Pasterry"></div>
+      <div class="brand-text"><div class="brand-sub"></div></div>
+    </div>
+    <div class="actions"></div>
+  </header>
+<main>
+  <div class="categories" id="categories" role="tablist" aria-label="Categorias"></div>
+  
+  <div class="destaques" id="destaques">
+    <h2>Destaques</h2>
+    <div class="destaques-grid" id="destaquesGrid"></div>
+  </div>
+  
+  <div class="content">
+    <div class="left" aria-live="polite">
+      <div class="products-wrap">
+        <div id="products" class="products" role="list"></div>
+      </div>
+    </div>
+  </div>
+</main>
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <div class="left-panel">
+          <div id="dialogTitle" style="font-weight:800;font-size:18px">Editar quantidade</div>
+          <div class="num-display" id="numDisplay">1</div>
+          <div class="kbd" id="kbd">
+            <button data-key="1" type="button">1</button><button data-key="2" type="button">2</button><button data-key="3" type="button">3</button>
+            <button data-key="4" type="button">4</button><button data-key="5" type="button">5</button><button data-key="6" type="button">6</button>
+            <button data-key="7" type="button">7</button><button data-key="8" type="button">8</button><button data-key="9" type="button">9</button>
+            <button data-key="back" type="button">â«</button><button data-key="0" type="button">0</button><button data-key="clear" type="button">C</button>
+          </div>
+        </div>
+        <div style="width:260px;display:flex;flex-direction:column;gap:10px;align-items:stretch">
+          <button class="btn" id="saveQty" type="button">Salvar</button>
+          <button class="btn secondary" id="cancelQty" type="button">Cancelar</button>
+          <div style="color:var(--muted);font-size:13px">Para quantidades grandes, use os botÃµes 0-9</div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="sizeOverlay" aria-hidden="true" style="display:none">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sizeTitle" style="max-width:720px">
+        <div class="left-panel">
+          <div id="sizeTitle" style="font-weight:800;font-size:18px"></div>
+          <div id="sizeDesc" class="muted" style="margin-top:4px"></div>
+          <div id="sizeOptions" style="display:grid;gap:10px;margin-top:14px"></div>
+        </div>
+        <div class="size-image-wrap">
+          <img id="sizeImg" class="size-image" alt="" />
+          <div class="muted" style="text-align:center">Toque em uma opÃ§Ã£o para adicionar ao pedido.</div>
+        </div>
+      </div>
+    </div>
+    <div class="attract hidden" id="attract" role="dialog" aria-modal="true">
+      <h1>Bem-vindo</h1>
+      <p>PeÃ§a rÃ¡pido e fÃ¡cil no nosso totem</p>
+      <button class="big-btn" id="startBtn" type="button" aria-label="Iniciar atendimento">Toque para Iniciar</button>
+    </div>
+  </div>
+  <div class="footer-bar">
+    <button class="btn cart-btn footer-cart" id="checkoutBtn" type="button" aria-label="Ver carrinho">
+      <span class="cart-ico" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+          <path d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44C8.52 16.37 8.92 17 9.5 17h9v-2h-8.6l1.1-2h6.45c.75 0 1.41-.41 1.75-1.03L22 7H6.42l-.7-1.5C5.52 5.2 5.27 5 5 5H3V3h2c.83 0 1.55.52 1.83 1.3L7 4zm5 13c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+        </svg>
+      </span>
+      <span class="cart-label">Ver carrinho</span>
+      <span class="cart-total" id="cartTotal">R$ 0,00</span>
+      <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+
+  <script type="module">
+  import { CATEGORIES, PRODUCTS } from './menu.js';
+
+  const cli = JSON.parse(localStorage.getItem('pasterry_cliente_v1') || '{}');
+  const pedidos = JSON.parse(localStorage.getItem('pedidos_pasterry_v1') || '[]');
+  const meus = cli.telefone ? pedidos.filter(p => p.cliente.telefone === cli.telefone) : [];
+  
+  const btn = document.getElementById('btnPedidos');
+  if (cli.nome && meus.length > 0) {
+    btn.innerHTML = `ð ${cli.nome.split(' ')[0]} â¢ ${meus.length} pedido${meus.length>1?'s':''}`;
+    btn.style.background = '#28a745';
+    btn.style.color = '#fff';
+  }
+
+  const CLIENTE_KEY = 'pasterry_cliente_v1';
+  function atualizarBotaoPedidos(){
+    const btn = document.getElementById('btnPedidos');
+    if(!btn) return;
+    try { const cli = JSON.parse(localStorage.getItem(CLIENTE_KEY) || '{}'); btn.innerHTML = 'Meus Pedidos'; }
+    catch { btn.innerHTML = 'Meus Pedidos'; }
+  }
+  document.addEventListener('DOMContentLoaded', atualizarBotaoPedidos);
+  window.addEventListener('focus', atualizarBotaoPedidos);
+    
+  const CART_KEY = 'pasterry_cart_v1';
+  function loadCart(){ try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } }
+  function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(cart)); updateCheckoutText(); }
+  let cart = loadCart();
+
+  let activeCategory = CATEGORIES[0].id;
+  let idleTimer = null;
+  const IDLE_TIMEOUT = 60 * 1000;
+
+  const categoriesEl = document.getElementById('categories');
+  const productsEl = document.getElementById('products');
+  const overlay = document.getElementById('overlay');
+  const numDisplay = document.getElementById('numDisplay');
+  const attract = document.getElementById('attract');
+  const checkoutBtn = document.getElementById('checkoutBtn');
+  const toastWrap = document.getElementById('toastWrap');
+  const cartBadge = document.getElementById('cartBadge');
+  const productsWrap = document.querySelector('.products-wrap');
+  const destaquesGrid = document.getElementById('destaquesGrid');
+  function scrollProductsToTop(){ if (productsWrap) productsWrap.scrollTop = 0; }
+
+  const formatBRL = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+  function resetIdleTimer(){ if (idleTimer) clearTimeout(idleTimer); idleTimer = setTimeout(()=> showAttract(), IDLE_TIMEOUT); }
+  function showAttract(){ attract.classList.remove('hidden'); }
+  function hideAttract(){ attract.classList.add('hidden'); }
+  document.addEventListener('touchstart', resetIdleTimer, {passive:true});
+  document.addEventListener('mousedown', resetIdleTimer);
+  resetIdleTimer();
+
+  function getCartCount(){ return cart.reduce((s,i)=>s+i.qty,0); }
+  function getCartTotal(){ return cart.reduce((s,i)=> s + (i.price * i.qty), 0); }
+  function updateCheckoutText(){
+    const n = getCartCount();
+    const total = getCartTotal();
+    if (cartBadge) cartBadge.textContent = n;
+    const totalEl = document.getElementById('cartTotal');
+    if (totalEl) totalEl.textContent = formatBRL(total);
+    if (checkoutBtn) checkoutBtn.setAttribute('aria-label', `Ver carrinho (${n} itens, ${formatBRL(total)})`);
+  }
+  function pulseCart(){
+    const btn = document.getElementById('checkoutBtn');
+    const badge = document.getElementById('cartBadge');
+    [btn, badge].forEach(el => { if(!el) return; el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); });
+  }
+
+  function setActiveCategory(catId, {scrollIntoView=false}={}){
+    if (!catId || (activeCategory === catId &&!scrollIntoView)) return;
+    activeCategory = catId;
+    document.querySelectorAll('.cat').forEach(b=>{
+      const isActive = b.dataset.cat === catId;
+      b.classList.toggle('active', isActive);
+      if (isActive && scrollIntoView) b.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+    });
+  }
+
+  function renderDestaques(){
+    if(!destaquesGrid) return;
+    const destaques = [
+      { ...PRODUCTS.pasteis[0], cat:'pasteis', price:14.99 },
+      { ...PRODUCTS.pasteis[9], cat:'pasteis', price:14.99 },
+      { ...PRODUCTS.pasteis[16], cat:'pasteis', price:14.99 },
+      { ...PRODUCTS.pasteis_especiais[0], cat:'pasteis_especiais', price:17.99 },
+      { ...PRODUCTS.pasteis_especiais[7], cat:'pasteis_especiais', price:19.99 },
+      { ...PRODUCTS.pasteis_doces[0], cat:'pasteis_doces', price:14.99 }
+    ];
+    
+    destaquesGrid.innerHTML = destaques.map((p,i)=>{
+      const price = p.sizes ? Math.min(...Object.values(p.sizes)) : p.price;
+      return `
+        <div class="destaque-card" onclick="window._addDestaque('${p.id}','${p.cat}')">
+          <div class="img-wrap">
+            <img src="${p.img}" alt="${p.title}">
+            ${i===0?'<div class="badge">Mais pedido</div>':''}
+          </div>
+          <div class="info">
+            <div class="price">${formatBRL(price)}</div>
+            <div class="title">${p.title.split(' â ')[0]}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+  
+  window._addDestaque = (id, cat)=>{
+    const p = (PRODUCTS[cat]||[]).find(x=>x.id===id);
+    if(!p) return;
+    if(p.sizes) openSizeDialog(p);
+    else addToCart(id, cat);
+  };
+
+  function renderCategories(){
+    categoriesEl.innerHTML = '';
+    CATEGORIES.forEach(cat=>{
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cat' + (cat.id === activeCategory? ' active' : '');
+      b.dataset.cat = cat.id;
+      b.textContent = cat.name;
+      b.setAttribute('role','tab');
+      b.addEventListener('click', ()=>{
+        const section = document.querySelector(`.cat-section[data-cat="${cat.id}"]`);
+        if (section) section.scrollIntoView({behavior:'smooth', block:'start'});
+        setActiveCategory(cat.id, {scrollIntoView:true});
+        resetIdleTimer();
+      });
+      categoriesEl.appendChild(b);
+    });
+    document.querySelectorAll('.cat').forEach(bindPressAnimation);
+  }
+
+  function renderProducts(){
+    productsEl.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const section = document.createElement('section');
+      section.className = 'cat-section';
+      section.dataset.cat = cat.id;
+      section.style.scrollMarginTop = '90px';
+
+      const header = document.createElement('div');
+      header.className = 'muted';
+      header.style.cssText = 'font-weight:800; letter-spacing:.3px; margin:6px 4px 10px; opacity:.8';
+      header.textContent = cat.name;
+      section.appendChild(header);
+
+      const grid = document.createElement('div');
+      grid.className = 'products';
+
+      const list = PRODUCTS[cat.id] || [];
+      list.forEach(p=>{
+        const card = document.createElement('div');
+        card.className = 'product';
+        card.tabIndex = 0;
+        card.setAttribute('role','listitem');
+
+        const media = document.createElement('div');
+        media.className = 'media';
+        const img = document.createElement('img');
+        img.alt = p.title;
+        img.src = p.img || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Imagem</text></svg>";
+        media.appendChild(img);
+        card.appendChild(media);
+
+        const textContent = document.createElement('div');
+        textContent.className = 'text-content';
+
+        const title = document.createElement('div'); title.className = 'title'; title.textContent = p.title;
+        const desc = document.createElement('div'); desc.className = 'muted'; desc.textContent = p.desc || '';
+        
+        const infoFooter = document.createElement('div');
+        infoFooter.className = 'info-footer';
+
+        const price = document.createElement('div'); price.className = 'price';
+        if (p.sizes) {
+          const minPrice = Math.min(...Object.values(p.sizes));
+          price.textContent = `A partir de ${formatBRL(minPrice)}`;
+        } else {
+          price.textContent = formatBRL(p.price);
+        }
+
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'add-btn';
+        addBtn.setAttribute('aria-label', `Adicionar ${p.title}`);
+        addBtn.textContent = 'Adicionar';
+        addBtn.addEventListener('click', (e)=>{ e.stopPropagation(); if (p.sizes) openSizeDialog(p); else addToCart(p.id, cat.id); });
+
+        infoFooter.appendChild(price);
+        infoFooter.appendChild(addBtn);
+        
+        textContent.appendChild(title);
+        textContent.appendChild(desc);
+        textContent.appendChild(infoFooter);
+
+        card.appendChild(textContent);
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      productsEl.appendChild(section);
+    });
+    document.querySelectorAll('.add-btn').forEach(bindPressAnimation);
+  }
+
+  function showToast({title='Item adicionado', sub=''}={}){
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.innerHTML = `<div class="check">â</div><div><div class="title">${title}</div>${sub? `<div class="sub">${sub}</div>` : ``}</div>`;
+    toastWrap.appendChild(el);
+    setTimeout(()=>{ el.remove(); }, 1900);
+  }
+
+  function addToCart(productId, category){
+    const p = (PRODUCTS[category]||[]).find(x=>x.id===productId);
+    if(!p) return;
+    const existing = cart.find(i=>i.id===productId);
+    if(existing) existing.qty += 1;
+    else cart.push({ id: p.id, title: p.title, price: p.price, qty: 1, img: p.img });
+    saveCart(); hideAttract(); resetIdleTimer(); pulseCart();
+    const q = (existing? existing.qty : 1);
+    showToast({ title: `${p.title} adicionado`, sub: `Quantidade no carrinho: ${q}` });
+  }
+
+  function addToCartWithSize(p, sizeKey){
+    const price = p.sizes[sizeKey];
+    const categoryId = activeCategory;
+    let unit = 'cm';
+    if (categoryId === 'acai') unit = 'ml';
+    if (categoryId === 'salgados' || categoryId === 'churros') unit = ' unid.';
+    const variantId = `${p.id}-${sizeKey}`;
+    const titleWithSize = `${p.title} ${sizeKey}${unit}`;
+    const existing = cart.find(i=>i.id===variantId);
+    if(existing) existing.qty += 1;
+    else cart.push({ id: variantId, title: titleWithSize, price, qty: 1, img: p.img });
+    saveCart(); hideAttract(); resetIdleTimer(); pulseCart();
+    const q = (existing? existing.qty : 1);
+    showToast({ title: `${titleWithSize} adicionado`, sub: `Quantidade no carrinho: ${q}` });
+  }
+
+  let editingIndex = null;
+  function openQtyDialog(idx){
+    editingIndex = idx;
+    numDisplay.textContent = String(cart[idx].qty);
+    overlay.style.display = 'flex';
+    overlay.setAttribute('aria-hidden','false');
+    document.getElementById('kbd').querySelectorAll('button').forEach(b=>{ b.onclick = ()=> handleKey(b.dataset.key); });
+    document.querySelectorAll('#kbd button, #saveQty, #cancelQty').forEach(bindPressAnimation);
+    resetIdleTimer();
+  }
+  function closeQtyDialog(){ overlay.style.display = 'none'; overlay.setAttribute('aria-hidden','true'); editingIndex = null; }
+  function handleKey(key){
+    let v = numDisplay.textContent;
+    if(key === 'back'){ v = v.slice(0,-1) || '0'; }
+    else if(key === 'clear'){ v = '0'; }
+    else { v = (v === '0')? key : v + key; }
+    if(v.length > 4) v = v.slice(0,4);
+    v = v.replace(/^0+(?=\d)/,'');
+    if(v === '' ) v = '0';
+    numDisplay.textContent = v;
+  }
+  document.getElementById('saveQty').addEventListener('click', ()=>{
+    const n = parseInt(numDisplay.textContent || '0',10);
+    if(!isNaN(n) && n>=1 && editingIndex!== null){ cart[editingIndex].qty = n; saveCart(); }
+    closeQtyDialog();
+  });
+  document.getElementById('cancelQty').addEventListener('click', ()=> closeQtyDialog());
+  overlay.addEventListener('click', (e)=> { if(e.target === overlay) closeQtyDialog(); });
+
+  const sizeOverlay = document.getElementById('sizeOverlay');
+  const sizeTitle = document.getElementById('sizeTitle');
+  const sizeDesc = document.getElementById('sizeDesc');
+  const sizeOptions = document.getElementById('sizeOptions');
+  const sizeImg = document.getElementById('sizeImg');
+  let pendingProduct = null;
+
+  function openSizeDialog(p){
+    pendingProduct = p;
+    sizeTitle.textContent = p.title;
+    sizeDesc.textContent = p.desc || '';
+    sizeOptions.innerHTML = '';
+    const entries = Object.entries(p.sizes || {}).sort((a,b)=> Number(a[0]) - Number(b[0]));
+    const categoryId = activeCategory;
+    entries.forEach(([size, price])=>{
+      let unit = 'cm';
+      if (categoryId === 'acai') unit = 'ml';
+      if (categoryId === 'salgados' || categoryId === 'churros') unit = ' unid.';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn';
+      btn.style.display = 'flex';
+      btn.style.justifyContent = 'space-between';
+      btn.style.alignItems = 'center';
+      const label = `${size}${unit}`;
+      btn.innerHTML = `<span>${label}</span><strong>${formatBRL(price)}</strong>`;
+      btn.addEventListener('click', ()=>{ addToCartWithSize(p, size); closeSizeDialog(); });
+      bindPressAnimation(btn);
+      sizeOptions.appendChild(btn);
+    });
+    sizeImg.src = p.img || '';
+    sizeImg.alt = p.title;
+    sizeOverlay.style.display = 'flex';
+    sizeOverlay.setAttribute('aria-hidden','false');
+    resetIdleTimer();
+  }
+  function closeSizeDialog(){
+    sizeOverlay.style.display = 'none';
+    sizeOverlay.setAttribute('aria-hidden','true');
+    pendingProduct = null;
+  }
+  sizeOverlay.addEventListener('click', (e)=>{ if(e.target === sizeOverlay) closeSizeDialog(); });
+
+  checkoutBtn.addEventListener('click', ()=>{
+    saveCart();
+    window.location.href = 'carrinho.html';
+  });
+
+  document.getElementById('startBtn').addEventListener('click', ()=>{ hideAttract(); resetIdleTimer(); scrollProductsToTop(); });
+  attract.addEventListener('click', ()=> { hideAttract(); resetIdleTimer(); scrollProductsToTop(); });
+
+  function bindPressAnimation(el){
+    if(!el) return;
+    const add = ()=>{ el.classList.remove('press'); void el.offsetWidth; el.classList.add('press'); };
+    el.addEventListener('mousedown', add);
+    el.addEventListener('touchstart', add, {passive:true});
+  }
+  document.querySelectorAll('button,.btn,.big-btn,.cat').forEach(bindPressAnimation);
+
+  function nowStr(){
+    const d = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  const successOverlay = document.getElementById('successOverlay');
+  const okSuccessBtn = document.getElementById('okSuccess');
+  let successTimer = null;
+  function showSuccess({title='Pedido confirmado!', msg='Seu pedido foi enviado para a cozinha e estÃ¡ sendo impresso.', img='img/sucesso.png', autoCloseMs=2500} = {}){
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successMsg').textContent = msg;
+    document.getElementById('successImg').src = img;
+    successOverlay.style.display = 'flex';
+    successOverlay.setAttribute('aria-hidden','false');
+    clearTimeout(successTimer);
+    successTimer = setTimeout(hideSuccess, autoCloseMs);
+    resetIdleTimer();
+  }
+  function hideSuccess(){
+    successOverlay.style.display = 'none';
+    successOverlay.setAttribute('aria-hidden','true');
+    clearTimeout(successTimer);
+  }
+  successOverlay.addEventListener('click', (e)=>{ if(e.target === successOverlay) hideSuccess(); });
+  okSuccessBtn.addEventListener('click', hideSuccess);
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && successOverlay.style.display === 'flex') hideSuccess(); });
+
+  function refreshCartFromStorage(){
+    try { const raw = localStorage.getItem(CART_KEY); cart = raw? JSON.parse(raw) : []; } catch { cart = []; }
+    updateCheckoutText();
+  }
+  window.addEventListener('storage', (e)=>{ if (e.key === CART_KEY || e.key === 'pasterry_sales_v1') refreshCartFromStorage(); });
+  window.addEventListener('focus', refreshCartFromStorage);
+  document.addEventListener('visibilitychange', ()=>{ if (document.visibilityState === 'visible') refreshCartFromStorage(); });
+
+  renderDestaques(); renderCategories(); renderProducts(); updateCheckoutText();
+  attract.classList.add('hidden');
+  resetIdleTimer();
+  window.addToCart = addToCart; window.openQtyDialog = openQtyDialog;
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') { if(overlay.style.display === 'flex') closeQtyDialog(); if(sizeOverlay.style.display === 'flex') closeSizeDialog(); } resetIdleTimer(); });
+  </script>
+</body>
+</html>

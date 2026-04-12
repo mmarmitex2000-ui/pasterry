@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status do Pedido — Pasterry</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#1A1210;color:#e6eef6;padding:16px;padding-bottom:40px;transition:background 0.5s}
+  h1{margin:0 0 4px;font-size:24px;color:#07fcdb}
+.muted{opacity:.7;font-size:14px}
+.card{background:#2a201d;border-radius:12px;padding:14px;margin:14px 0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.badge{display:inline-block;padding:6px 12px;border-radius:20px;background:#28a745;color:#fff;font-weight:bold;text-transform:capitalize}
+.badge.cancelado{background:#dc3545}
+.timeline{display:flex;justify-content:space-between;margin:18px 0;gap:6px}
+.step{flex:1;text-align:center;font-size:12px;opacity:.4;position:relative}
+.step.active{opacity:1;color:#07fcdb;font-weight:bold}
+.step::before{content:'';display:block;width:14px;height:14px;border-radius:50%;background:#444;margin:0 auto 6px;border:2px solid #1A1210}
+.step.active::before{background:#28a745}
+.item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #444;font-size:14px}
+.btn{width:100%;padding:12px;border:none;border-radius:10px;background:#28a745;color:#fff;font-weight:bold;font-size:16px;cursor:pointer;margin-top:10px;text-align:center;text-decoration:none;display:block;box-sizing:border-box}
+.btn.ghost{background:#444}
+.btn.whats{background:#25D366;color:#1A1210}
+input.tel{width:100%;padding:12px;border-radius:10px;border:1px solid #444;background:#1A1210;color:#e6eef6;font-size:16px;box-sizing:border-box}
+.row{display:flex;justify-content:space-between;margin:4px 0}
+.aviso{border-left:4px solid #ffcc00;background:#332800}
+.pulse{animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+#mapa-rastreio{height:180px;width:100%;border-radius:0 0 12px 12px}
+.leaflet-control-attribution{font-size:9px!important}
+</style>
+</head>
+<body>
+  <div id="view"></div>
+  <button class="btn ghost" onclick="location.href='index.html'">Voltar ao cardápio</button>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0",
+    authDomain: "paineldepedidos-8cfff.firebaseapp.com",
+    projectId: "paineldepedidos-8cfff",
+    storageBucket: "paineldepedidos-8cfff.appspot.com",
+    messagingSenderId: "390619980929",
+    appId: "1:390619980929:web:5bb015938e9dcb89389980"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const WHATS_LOJA = '5511994046432';
+  const params = new URLSearchParams(location.search);
+  let id = params.get('id');
+  let unsubscribe = null;
+  let ultimoStatus = null;
+  let mapa = null;
+
+  if ('Notification' in window && Notification.permission!== 'granted') {
+    Notification.requestPermission();
+  }
+
+  const CLIENTE_KEY = 'pasterry_cliente_v1';
+  const esc = s => String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const onlyDigits = s => String(s||'').replace(/\D/g,'');
+  const money = v => 'R$ '+Number(v||0).toFixed(2).replace('.',',');
+  const formatTelBR = v => {v=onlyDigits(v).slice(0,11);if(v.length>10)return v.replace(/(\d{2})(\d{5})(\d{0,4})/,'($1) $2-$3');if(v.length>6)return v.replace(/(\d{2})(\d{4})(\d{0,4})/,'($1) $2-$3');if(v.length>2)return v.replace(/(\d{2})(\d{0,5})/,'($1) $2');return v;};
+  const getCliente = ()=>{try{return JSON.parse(localStorage.getItem(CLIENTE_KEY)||'{}')}catch(e){return{}}};
+  const setCliente = c=>localStorage.setItem(CLIENTE_KEY, JSON.stringify(c));
+
+  function renderPedido(p){
+    const view = document.getElementById('view');
+    const statusMap = {
+      novo: 'Recebido pela loja',
+      preparando: 'Em fila de preparo',
+      saiu: 'Saiu para entrega',
+      entrega: 'Saiu para entrega',
+      entregue: 'Entregue',
+      cancelado: 'Cancelado'
+    };
+
+    const steps = [
+      {key:'novo', label:'Recebido pela loja'},
+      {key:'preparando', label:'Em fila de preparo'},
+      {key:'saiu', label:'Saiu para entrega'},
+      {key:'entregue', label:'Entregue'}
+    ];
+
+    const isCancelado = p.status === 'cancelado';
+    const statusReal = p.status === 'entrega'? 'saiu' : p.status;
+    const temRastreio = statusReal === 'saiu' && p.lat && p.lng;
+
+    const isActive = (stepKey) => {
+      if(isCancelado) return false;
+      if(stepKey === 'novo') return true;
+      if(stepKey === 'preparando') return ['novo','preparando','saiu','entregue'].includes(statusReal);
+      if(stepKey === 'saiu') return ['saiu','entregue'].includes(statusReal);
+      if(stepKey === 'entregue') return statusReal === 'entregue';
+      return false;
+    };
+
+    const whatsMsg = encodeURIComponent(`Olá, meu nome é ${p.cliente?.nome||''}. Pedido #${p.id.substring(0,6).toUpperCase()}, gostaria de falar com atendente.`);
+
+    const mapaHtml = temRastreio? `
+      <div class="card" style="padding:0;overflow:hidden;border:2px solid #28a745">
+        <div style="padding:12px 14px 8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>🛵 Rastreio ao vivo</strong>
+            <span style="font-size:11px;background:#28a745;padding:3px 8px;border-radius:10px">AO VIVO</span>
+          </div>
+          <div class="muted" style="font-size:12px">Motoboy: ${esc(p.motoboy||'a caminho')} • Atualizado agora</div>
+        </div>
+        <div id="mapa-rastreio"></div>
+      </div>` : '';
+
+    view.innerHTML = `
+      <h1>Seu pedido</h1>
+      <div class="muted">Pedido #${esc(p.id.substring(0,6).toUpperCase())} • ${esc(p.data)} <span class="pulse">• ao vivo</span></div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>Status</strong>
+          <span class="badge ${isCancelado?'cancelado':''}">${esc(statusMap[p.status]||'Recebido pela loja')}</span>
+        </div>
+        <div class="timeline">
+          ${steps.map(s=>`<div class="step ${isActive(s.key)?'active':''}">${esc(s.label)}</div>`).join('')}
+        </div>
+      </div>
+
+      ${mapaHtml}
+
+      <div class="card">
+        <strong>Detalhes</strong>
+        <div style="margin-top:8px">
+          ${(p.itens||[]).map(i=>`<div class="item"><span>${esc(i.qty||1)}x ${esc(i.title||i.nome)}</span><span>${money((i.price||0)*(i.qty||1))}</span></div>`).join('')}
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #444">
+          <div class="row"><span>Subtotal</span><span>${money(p.subtotal)}</span></div>
+          <div class="row"><span>Taxa</span><span>${money(p.taxa||p.taxaEntrega||0)}</span></div>
+          <div class="row" style="font-weight:bold;font-size:16px;margin-top:6px"><span>Total</span><span>${money(p.total)}</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <strong>Pagamento</strong>
+        <div style="margin-top:6px;font-size:14px">${esc(p.pagamento||'Não informado')}${p.pagamento==='Dinheiro'&&p.troco?`<br>Troco: ${money(p.troco)}`:''}</div>
+      </div>
+
+      <div class="card aviso">
+        <strong>⚠️ Atenção</strong>
+        <div style="margin-top:6px;font-size:13px">Não recebemos pagamentos adiantados.<br>Pix apenas na máquina, o motoboy leva.</div>
+      </div>
+
+      <a href="https://wa.me/${WHATS_LOJA}?text=${whatsMsg}" target="_blank" class="btn whats">💬 Falar no WhatsApp</a>`;
+
+    if(temRastreio){
+      setTimeout(()=>{
+        if(mapa) mapa.remove();
+        mapa = L.map('mapa-rastreio', {zoomControl:false, dragging:true}).setView([p.lat, p.lng], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(mapa);
+        const moto = L.divIcon({html:'<div style="font-size:28px">🛵</div>',iconSize:[28,28],className:''});
+        L.marker([p.lat, p.lng], {icon:moto}).addTo(mapa);
+      }, 50);
+    }
+  }
+
+  async function iniciar(){
+    const view = document.getElementById('view');
+    view.innerHTML = '<div style="text-align:center;padding:20px;opacity:.6">Carregando...</div>';
+
+    if(!id){
+      const cli = getCliente();
+      if(cli.telefone){
+        const q = query(collection(db,"pedidos"), where("cliente.telefone","==",onlyDigits(cli.telefone)), limit(1));
+        const snap = await getDocs(q);
+        if(!snap.empty){ id = snap.docs[0].id; history.replaceState(null,'',`status.html?id=${id}`); }
+      }
+    }
+
+    if(id){
+      if(unsubscribe) unsubscribe();
+      unsubscribe = onSnapshot(doc(db, "pedidos", String(id)), (snap)=>{
+        if(snap.exists()) {
+          const p = {id:snap.id,...snap.data()};
+          renderPedido(p);
+
+          const statusReal = p.status === 'entrega'? 'saiu' : p.status;
+          if(statusReal === 'saiu' && ultimoStatus!== 'saiu') {
+            new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(()=>{});
+            navigator.vibrate?.([200,100,200]);
+            if(Notification.permission === 'granted') {
+              new Notification('🛵 Saiu para entrega!', {
+                body: `Pedido #${p.id.substring(0,6).toUpperCase()} está a caminho`,
+                icon: 'https://i.imgur.com/8Km9tLL.png'
+              });
+            }
+            document.body.style.background = '#0f3d2e';
+          }
+          ultimoStatus = statusReal;
+        }
+        else view.innerHTML = '<h1>Pedido não encontrado</h1>';
+      });
+      return;
+    }
+
+    view.innerHTML = `<h1>Meus Pedidos</h1>
+      <div class="card"><input class="tel" id="tel" placeholder="(11) 99999-9999" oninput="this.value=formatTelBR(this.value)"><button class="btn" id="btn">Ver pedido</button></div>`;
+    document.getElementById('btn').onclick = ()=>{
+      const tel = onlyDigits(document.getElementById('tel').value);
+      if(tel.length<10) return alert('Telefone inválido');
+      setCliente({...getCliente(), telefone:tel});
+      location.reload();
+    };
+  }
+
+  iniciar();
+  window.formatTelBR = formatTelBR;
+</script>
+</body>
+</html>
