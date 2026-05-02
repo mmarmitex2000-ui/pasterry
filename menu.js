@@ -867,21 +867,34 @@ export const PRODUCTS = {
         "25": 25.99
       }
     },
-    {
+
+ {
       "id": "louca6",
-      "title": "LOUCA 6 — Carne louca, Catupiry original",
-      "desc": "Carne louca com Catupiry original.",
+      "title": "LOUCA 6 — Carne louca com requeijão e palmito",
+      "desc": "Carne louca com requeijão e palmito.",
       "img": "img/louca6.png",
+      "sizes": {
+        "15": 22.99,
+        "25": 26.99
+      }
+    },
+
+
+    {
+      "id": "louca7",
+      "title": "LOUCA 7 — Carne louca, Catupiry original",
+      "desc": "Carne louca com Catupiry original.",
+      "img": "img/louca7.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
       }
     },
     {
-      "id": "louca7",
-      "title": "LOUCA 7 — Carne louca, cheddar polenghi",
+      "id": "louca8",
+      "title": "LOUCA 8 — Carne louca, cheddar polenghi",
       "desc": "Carne louca com cheddar Polenghi.",
-      "img": "img/louca7.png",
+      "img": "img/louca8.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
