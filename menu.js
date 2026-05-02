@@ -41,7 +41,7 @@ export const PRODUCTS = {
       "desc": "Pastel de carne moída bem temperada.",
       "img": "img/beef1.png",
       "sizes": {
-        "15": 14.99,
+        "15": 15.99,
         "25": 16.99
       }
     },
@@ -131,8 +131,8 @@ export const PRODUCTS = {
       "desc": "Frango desfiado com mussarela.",
       "img": "img/chicken2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -141,8 +141,8 @@ export const PRODUCTS = {
       "desc": "Frango desfiado com requeijão cremoso.",
       "img": "img/chicken3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -151,8 +151,8 @@ export const PRODUCTS = {
       "desc": "Frango desfiado com cheddar.",
       "img": "img/chicken4.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -161,8 +161,8 @@ export const PRODUCTS = {
       "desc": "Frango desfiado com purê de batata.",
       "img": "img/chicken5.png",
       "sizes": {
-        "15": 17.99,
-        "25": 21.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -211,8 +211,8 @@ export const PRODUCTS = {
       "desc": "Calabresa com mussarela.",
       "img": "img/italian2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -221,8 +221,8 @@ export const PRODUCTS = {
       "desc": "Calabresa com requeijão cremoso.",
       "img": "img/italian3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -231,8 +231,8 @@ export const PRODUCTS = {
       "desc": "Calabresa com cheddar.",
       "img": "img/italian4.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -241,8 +241,8 @@ export const PRODUCTS = {
       "desc": "Calabresa com purê de batata.",
       "img": "img/italian5.png",
       "sizes": {
-        "15": 17.99,
-        "25": 21.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -291,8 +291,8 @@ export const PRODUCTS = {
       "desc": "Calabresa, mussarela e pimenta.",
       "img": "img/baiano2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -301,8 +301,8 @@ export const PRODUCTS = {
       "desc": "Calabresa, requeijão e pimenta.",
       "img": "img/baiano3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -311,8 +311,8 @@ export const PRODUCTS = {
       "desc": "Calabresa, cheddar e pimenta.",
       "img": "img/baiano4.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -321,8 +321,8 @@ export const PRODUCTS = {
       "desc": "Calabresa, purê e pimenta.",
       "img": "img/baiano5.png",
       "sizes": {
-        "15": 17.99,
-        "25": 21.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -421,8 +421,8 @@ export const PRODUCTS = {
       "desc": "Mussarela com requeijão.",
       "img": "img/mineiro2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -431,8 +431,8 @@ export const PRODUCTS = {
       "desc": "Mussarela com cheddar.",
       "img": "img/mineiro3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -481,8 +481,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, tomate, orégano e requeijão.",
       "img": "img/pizza2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -491,8 +491,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, tomate, orégano e cheddar.",
       "img": "img/pizza3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -531,8 +531,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, presunto, tomate, orégano e requeijão.",
       "img": "img/bauru2.png",
       "sizes": {
-        "15": 15.99,
-        "25": 17.99
+        "15": 17.99,
+        "25": 19.99
       }
     },
     {
@@ -541,8 +541,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, presunto, tomate, orégano e cheddar.",
       "img": "img/bauru3.png",
       "sizes": {
-        "15": 15.99,
-        "25": 17.99
+        "15": 17.99,
+        "25": 19.99
       }
     },
     {
@@ -581,8 +581,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, presunto e requeijão.",
       "img": "img/misto2.png",
       "sizes": {
-        "15": 15.99,
-        "25": 17.99
+        "15": 17.99,
+        "25": 19.99
       }
     },
     {
@@ -591,8 +591,8 @@ export const PRODUCTS = {
       "desc": "Mussarela, presunto e cheddar.",
       "img": "img/misto3.png",
       "sizes": {
-        "15": 15.99,
-        "25": 17.99
+        "15": 17.99,
+        "25": 19.99
       }
     },
     {
@@ -647,44 +647,66 @@ export const PRODUCTS = {
     },
     {
       "id": "brocolis4",
-      "title": "BRÓCOLIS 4 — Brócolis e bacon",
-      "desc": "Brócolis e bacon.",
+      "title": "BRÓCOLIS 4 — Brócolis, mussarela e bacon",
+      "desc": "Brócolis, mussarela e bacon.",
       "img": "img/brocolis4.png",
       "sizes": {
         "15": 20.99,
         "25": 26.99
       }
     },
-    {
+{
       "id": "brocolis5",
-      "title": "BRÓCOLIS 5 — Brócolis com Catupiry original",
-      "desc": "Brócolis com Catupiry original.",
+      "title": "BRÓCOLIS 5 — Brócolis, tomate, ovo, milho, azeitona e requeijão",
+      "desc": " Brócolis, tomate, ovo, milho, azeitona e requeijão",
       "img": "img/brocolis5.png",
       "sizes": {
         "15": 20.99,
         "25": 26.99
       }
-    },
-    {
+      },
+
+
+
+        {
       "id": "brocolis6",
-      "title": "BRÓCOLIS 6 — Brócolis com cheddar polenghi",
-      "desc": "Brócolis com cheddar Polenghi.",
+      "title": "BRÓCOLIS 6 — Brócolis com Catupiry Original",
+      "desc": "Brócolis com Catupiry Original",
       "img": "img/brocolis6.png",
       "sizes": {
         "15": 22.99,
         "25": 30.99
       }
     },
+
     {
       "id": "brocolis7",
-      "title": "BRÓCOLIS 7 — Brócolis Completo",
-      "desc": "Brócolis, mussarela, bacon e Catupiry.",
+      "title": "BRÓCOLIS 7 — Brócolis com cheddar polenghi",
+      "desc": "Brócolis com cheddar Polenghi.",
       "img": "img/brocolis7.png",
       "sizes": {
         "15": 22.99,
         "25": 30.99
       }
     },
+
+   {
+      "id": "brocolis8",
+      "title": "BRÓCOLIS 8 — Brócolis, tomate, ovo, milho, azeitona e catupiry original",
+      "desc": " Brócolis, tomate, ovo, milho, azeitona e catupiry original",
+      "img": "img/brocolis8.png",
+      "sizes": {
+        "15": 26.99,
+        "25": 31.99
+      }
+      },
+
+
+
+
+
+
+
     {
       "id": "pupunha1",
       "title": "PUPUNHA 1 — Palmito e mussarela",
@@ -747,8 +769,8 @@ export const PRODUCTS = {
     },
     {
       "id": "lombo1",
-      "title": "LOMBO 1 — Lombo com mussarela",
-      "desc": "Lombo suíno com mussarela.",
+      "title": "LOMBO 1 — Lombo, mussarela e champignon",
+      "desc": "Lombo suíno, mussarela e champignon.",
       "img": "img/lombo1.png",
       "sizes": {
         "15": 17.99,
@@ -757,8 +779,8 @@ export const PRODUCTS = {
     },
     {
       "id": "lombo2",
-      "title": "LOMBO 2 — Lombo com requeijão",
-      "desc": "Lombo suíno com requeijão.",
+      "title": "LOMBO 2 — Lombo, requeijão e champignon",
+      "desc": "Lombo suíno, requeijão e champignon",
       "img": "img/lombo2.png",
       "sizes": {
         "15": 17.99,
@@ -767,8 +789,8 @@ export const PRODUCTS = {
     },
     {
       "id": "lombo3",
-      "title": "LOMBO 3 — Lombo com cheddar",
-      "desc": "Lombo suíno com cheddar.",
+      "title": "LOMBO 3 — lombo, cheddar e champignon",
+      "desc": "Lombo suíno, cheddar e champignon",
       "img": "img/lombo3.png",
       "sizes": {
         "15": 17.99,
@@ -777,8 +799,8 @@ export const PRODUCTS = {
     },
     {
       "id": "lombo4",
-      "title": "LOMBO 4 — Lombo, Catupiry original",
-      "desc": "Lombo suíno com Catupiry original.",
+      "title": "LOMBO 4 — Lombo, Catupiry Original e champignon",
+      "desc": "Lombo suíno, Catupiry Original, champignon.",
       "img": "img/lombo4.png",
       "sizes": {
         "15": 21.99,
@@ -787,8 +809,8 @@ export const PRODUCTS = {
     },
     {
       "id": "lombo5",
-      "title": "LOMBO 5 — Lombo, cheddar polenghi",
-      "desc": "Lombo suíno com cheddar Polenghi.",
+      "title": "LOMBO 5 — Lombo, cheddar polenghi e champignon",
+      "desc": "Lombo suíno com cheddar Polenghi e champginon",
       "img": "img/lombo5.png",
       "sizes": {
         "15": 21.99,
@@ -1019,8 +1041,8 @@ export const PRODUCTS = {
   "pasteis_doces": [
     {
       "id": "romeu-julieta",
-      "title": "ROMEU E JULIETA — Goiabada, queijo",
-      "desc": "Goiabada com queijo.",
+      "title": "ROMEU E JULIETA — Goiabada, queijo mussrela",
+      "desc": "Goiabada com queijo mussarela.",
       "img": "img/romeu-julieta.png",
       "sizes": {
         "15": 14.99,
@@ -1030,7 +1052,7 @@ export const PRODUCTS = {
     {
       "id": "doce-leite",
       "title": "SÓ DOCE DE LEITE",
-      "desc": "Pastel recheado com doce de leite.",
+      "desc": "só doce de leite.",
       "img": "img/doce-leite.png",
       "sizes": {
         "15": 14.99,
@@ -1050,8 +1072,8 @@ export const PRODUCTS = {
     {
       "id": "choco2",
       "title": "CHOCO 2 — Só chocolate branco",
-      "desc": "Chocolate branco.",
-      "img": "img/choco5.png",
+      "desc": " Só Chocolate branco.",
+      "img": "img/choco2.png",
       "sizes": {
         "15": 14.99,
         "25": 17.99
@@ -1080,7 +1102,7 @@ export const PRODUCTS = {
     {
       "id": "ninho1",
       "title": "NINHO 1 — Só leite Ninho",
-      "desc": "Leite Ninho.",
+      "desc": "Só Leite Ninho.",
       "img": "img/ninho1.png",
       "sizes": {
         "15": 15.99,
@@ -1090,7 +1112,7 @@ export const PRODUCTS = {
     {
       "id": "creme-avela1",
       "title": "SÓ CREME DE AVELÃ",
-      "desc": "Creme de avelã puro.",
+      "desc": "Só Creme de avelã.",
       "img": "img/creme-avela1.png",
       "sizes": {
         "15": 21.99,
@@ -1140,7 +1162,7 @@ export const PRODUCTS = {
     },
     {
       "id": "cruzeiro2",
-      "title": "CRUZEIRO 2 — Carne, ovo, azeit., queijo",
+      "title": "CRUZEIRO 2 — Carne, ovo, azeitona, queijo mussarela",
       "desc": "Carne, ovo, azeitona e queijo.",
       "img": "img/cruzeiro2.png",
       "sizes": {
@@ -1150,7 +1172,7 @@ export const PRODUCTS = {
     },
     {
       "id": "cruzeiro3",
-      "title": "CRUZEIRO 3 — Carne, ovo, azeit., requeijão",
+      "title": "CRUZEIRO 3 — Carne, ovo, azeitona, requeijão",
       "desc": "Carne, ovo, azeitona e requeijão.",
       "img": "img/cruzeiro3.png",
       "sizes": {
@@ -1160,7 +1182,7 @@ export const PRODUCTS = {
     },
     {
       "id": "cruzeiro4",
-      "title": "CRUZEIRO 4 — Carne, ovo, azeit., cheddar",
+      "title": "CRUZEIRO 4 — Carne, ovo, azeitona, cheddar",
       "desc": "Carne, ovo, azeitona e cheddar.",
       "img": "img/cruzeiro4.png",
       "sizes": {
@@ -1210,7 +1232,7 @@ export const PRODUCTS = {
     },
     {
       "id": "caipira2",
-      "title": "CAIPIRA 2 — Frango, milho, bacon, req.",
+      "title": "CAIPIRA 2 — Frango, milho, bacon, requeijão",
       "desc": "Frango, milho, bacon e requeijão.",
       "img": "img/caipira2.png",
       "sizes": {
@@ -1220,7 +1242,7 @@ export const PRODUCTS = {
     },
     {
       "id": "caipira3",
-      "title": "CAIPIRA 3 — Frango, milho, bacon, chedd.",
+      "title": "CAIPIRA 3 — Frango, milho, bacon, cheddar.",
       "desc": "Frango, milho, bacon e cheddar.",
       "img": "img/caipira3.png",
       "sizes": {
@@ -1230,8 +1252,8 @@ export const PRODUCTS = {
     },
     {
       "id": "portug1",
-      "title": "PORTUG 1 — Queij., pres., ovo, cebol., ervilha",
-      "desc": "Queijo, presunto, ovo, cebola e ervilha.",
+      "title": "PORTUG 1 — Queijo, presunto, ovo, cebola, milho e orégano",
+      "desc": "Queijo, presunto, ovo, cebola, milho e orégano.",
       "img": "img/portug1.png",
       "sizes": {
         "15": 19.99,
@@ -1240,8 +1262,8 @@ export const PRODUCTS = {
     },
     {
       "id": "portug2",
-      "title": "PORTUG 2 — Queij., pres., ovo, cebol., erv., req.",
-      "desc": "Queijo, presunto, ovo, cebola, ervilha e requeijão.",
+      "title": "PORTUG 2 — Queijo, presunto, ovo, cebola, milho, requeijão e orégano.",
+      "desc": "Queijo, presunto, ovo, cebola, milho, requeijão e orégano.",
       "img": "img/portug2.png",
       "sizes": {
         "15": 19.99,
@@ -1250,8 +1272,8 @@ export const PRODUCTS = {
     },
     {
       "id": "portug3",
-      "title": "PORTUG 3 — Queij., pres., ovo, cebol., erv., chedd.",
-      "desc": "Queijo, presunto, ovo, cebola, ervilha e cheddar.",
+      "title": "PORTUG 3 — Queijo, presunto, ovo, cebola, milho, cheddar e orégano.",
+      "desc": "Queijo, presunto, ovo, cebola, milho, cheddar e orégano.",
       "img": "img/portug3.png",
       "sizes": {
         "15": 19.99,
