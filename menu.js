@@ -41,8 +41,8 @@ export const PRODUCTS = {
       "desc": "Pastel de carne moída bem temperada.",
       "img": "img/beef1.png",
       "sizes": {
-        "15": 15.99,
-        "25": 19.99
+        "15": 14.99,
+        "25": 16.99
       }
     },
     {
@@ -51,8 +51,8 @@ export const PRODUCTS = {
       "desc": "Carne moída com mussarela derretida.",
       "img": "img/beef2.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -61,8 +61,8 @@ export const PRODUCTS = {
       "desc": "Carne moída com requeijão cremoso.",
       "img": "img/beef3.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -71,8 +71,8 @@ export const PRODUCTS = {
       "desc": "Carne moída com cheddar.",
       "img": "img/beef4.png",
       "sizes": {
-        "15": 14.99,
-        "25": 16.99
+        "15": 15.99,
+        "25": 19.99
       }
     },
     {
@@ -91,8 +91,8 @@ export const PRODUCTS = {
       "desc": "Carne e palmito.",
       "img": "img/beef6.png",
       "sizes": {
-        "15": 15.99,
-        "25": 19.99
+        "15": 17.99,
+        "25": 21.99
       }
     },
     {
