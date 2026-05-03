@@ -1,7 +1,7 @@
 export const CATEGORIES = [
   {
     "id": "pasteis",
-    "name": "Patéis"
+    "name": "Pastéis"
   },
   {
     "id": "pasteis_especiais",
