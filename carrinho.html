@@ -46,21 +46,21 @@ h3{margin:0 0 12px;font-size:22px;color:#07fcdb}
 <h3>Seus dados</h3>
 <button id="btnGeo" class="geo-btn" onclick="usarLocalizacao()">Usar minha localização</button>
 <div id="geoStatus" class="geo-status"></div>
-<input id="nome" placeholder="Nome completo">
-<input id="telefone" placeholder="WhatsApp com DDD">
-<select id="cidade"><option value="">Selecione sua cidade</option></select>
-<input id="rua" placeholder="Digite sua rua">
-<input id="numero" placeholder="Número">
-<input id="bairro" placeholder="Bairro">
-<select id="pagamento"><option value="">Forma de pagamento</option><option>Debito</option><option>Credito</option><option>Dinheiro</option></select>
-<input id="troco" placeholder="Troco para?" style="display:none">
+<input id="nome" placeholder="Nome completo*">
+<input id="telefone" placeholder="WhatsApp com DDD*">
+<select id="cidade"><option value="">Selecione sua cidade*</option></select>
+<input id="rua" placeholder="Digite sua rua*">
+<input id="numero" placeholder="Número*">
+<input id="bairro" placeholder="Bairro*">
+<select id="pagamento"><option value="">Forma de pagamento*</option><option>Debito</option><option>Credito</option><option>Dinheiro</option></select>
+<input id="troco" placeholder="Troco para quanto?*" style="display:none">
 <div class="cupom"><h4>Resumo</h4><div id="cupomItens"></div><div id="cupomTotal"></div></div>
 <button class="btn primary" style="width:100%" onclick="enviarPedido()">Confirmar e Enviar</button>
 </div></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp, runTransaction, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0", authDomain: "paineldepedidos-8cfff.firebaseapp.com", projectId: "paineldepedidos-8cfff" };
 const app = initializeApp(firebaseConfig);
@@ -100,7 +100,7 @@ async function carregar(){
   const snap=await getDoc(doc(db,"config","entrega"));
   configEntrega=snap.exists()?snap.data():{loja:{lat:-23.27824,lon:-46.73661},faixas:[{ate:5,taxa:5}],cidades:['Franco da Rocha']};
   if(configEntrega.googleMapsApiKey) GOOGLE_KEY=configEntrega.googleMapsApiKey;
-  cidade.innerHTML='<option value="">Selecione</option>'+configEntrega.cidades.map(c=>`<option>${c}</option>`).join('');
+  cidade.innerHTML='<option value="">Selecione sua cidade*</option>'+configEntrega.cidades.map(c=>`<option>${c}</option>`).join('');
   if(!window.google){ const s=document.createElement('script'); s.src=`https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&libraries=places,geometry&loading=async`; s.async=true; document.head.appendChild(s); }
   renderTotais();
 }
@@ -119,21 +119,91 @@ async function calcularTaxaEndereco(){
 const calcDebounced=debounce(calcularTaxaEndereco,700);
 
 function renderMolhos(){molhos.innerHTML=Object.entries(SAUCES).map(([n,s])=>`<div class="molho-card"><img src="${s.img}"><div>${n}</div><div>${money(s.price)}</div><button class="btn primary" onclick="addMolho('${n}')">+</button></div>`).join('')}
-function renderCart(){const c=getCart();cart.innerHTML=c.length?c.map((it,i)=>`<div class="cart-item"><img src="${it.img}"><div style="flex:1">${it.title} - ${it.qty}x</div></div>`).join(''):'Sacola vazia';renderTotais()}
+
+function renderCart(){
+  const c=getCart();
+  cart.innerHTML=c.length?c.map((it,i)=>`
+    <div class="cart-item">
+      <img src="${it.img}">
+      <div style="flex:1">${it.title}</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="btn secondary" style="padding:4px 8px" onclick="alterarQtd(${i},-1)">-</button>
+        <span>${it.qty}x</span>
+        <button class="btn primary" style="padding:4px 8px" onclick="alterarQtd(${i},1)">+</button>
+      </div>
+    </div>`).join(''):'Sacola vazia';
+  renderTotais()
+}
+
 function renderTotais(){const c=getCart();const sub=c.reduce((s,i)=>s+i.price*i.qty,0);totais.innerHTML=`Subtotal: ${money(sub)}<br>Entrega: ${taxaAtual!==null?money(taxaAtual):'—'}<br><b>Total: ${money(sub+(taxaAtual||0))}</b>`}
 function renderCupom(){const c=getCart();cupomItens.innerHTML=c.map(i=>`${i.qty}x ${i.title}`).join('<br>');const sub=c.reduce((s,i)=>s+i.price*i.qty,0);cupomTotal.innerHTML=`Subtotal: ${money(sub)}<br>Entrega: <b style="color:#07fcdb">${taxaAtual!==null?money(taxaAtual):'digite o endereço'}</b><br><b>Total: ${money(sub+(taxaAtual||0))}</b>`}
 
 window.addMolho=n=>{const c=getCart();const e=c.find(x=>x.id===n);if(e)e.qty++;else c.push({id:n,title:n,price:SAUCES[n].price,qty:1,img:SAUCES[n].img});setCart(c);renderCart()}
+
+window.alterarQtd=(i,delta)=>{
+  const c=getCart();
+  if(!c[i]) return;
+  c[i].qty += delta;
+  if(c[i].qty <= 0) c.splice(i,1);
+  setCart(c);
+  renderCart();
+  renderCupom();
+}
+
 window.limparSacola=()=>{localStorage.removeItem(CART_KEY);renderCart()}
 window.abrirModal=()=>{modalEndereco.style.display='flex';renderCupom()}
 window.fecharModal=()=>modalEndereco.style.display='none'
 window.usarLocalizacao=()=>{navigator.geolocation.getCurrentPosition(async p=>{const {latitude:lat,longitude:lon}=p.coords;taxaAtual=calcularTaxaLocal(lat,lon);renderTotais();renderCupom();geoStatus.textContent='Taxa: '+money(taxaAtual)})}
-window.enviarPedido=async()=>{const pedido={id:'A'+Date.now(),cliente:{nome:nome.value,telefone:telefone.value,cidade:cidade.value,rua:rua.value,numero:numero.value,bairro:bairro.value},itens:getCart(),taxa:taxaAtual,total:getCart().reduce((s,i)=>s+i.price*i.qty,0)+(taxaAtual||0),status:'novo',criadoEm:serverTimestamp()};await setDoc(doc(db,"pedidos",pedido.id),pedido);alert('Pedido enviado!');localStorage.removeItem(CART_KEY);location.href='index.html'}
+
+// VALIDACAO OBRIGATORIA
+window.enviarPedido=async()=>{
+  const c=getCart();
+  if(!c.length){ alert('Sua sacola está vazia'); return; }
+  if(!nome.value.trim()){ alert('Preencha seu nome completo'); nome.focus(); return; }
+  const tel = telefone.value.replace(/\D/g,'');
+  if(tel.length < 10){ alert('Preencha WhatsApp com DDD'); telefone.focus(); return; }
+  if(!cidade.value){ alert('Selecione sua cidade'); cidade.focus(); return; }
+  if(!rua.value.trim()){ alert('Digite sua rua'); rua.focus(); return; }
+  if(!numero.value.trim()){ alert('Digite o número'); numero.focus(); return; }
+  if(!bairro.value.trim()){ alert('Digite o bairro'); bairro.focus(); return; }
+  if(!pagamento.value){ alert('Selecione a forma de pagamento'); pagamento.focus(); return; }
+  if(pagamento.value==='Dinheiro' &&!troco.value.trim()){ alert('Informe troco para quanto'); troco.focus(); return; }
+  if(taxaAtual===null){ alert('Aguarde calcular a taxa de entrega'); return; }
+
+  const pedido={
+    id:'A'+Date.now(),
+    cliente:{
+      nome:nome.value.trim(),
+      telefone:telefone.value.trim(),
+      cidade:cidade.value,
+      rua:rua.value.trim(),
+      numero:numero.value.trim(),
+      bairro:bairro.value.trim(),
+      pagamento:pagamento.value,
+      troco: pagamento.value==='Dinheiro'?troco.value.trim():''
+    },
+    itens:c,
+    taxa:taxaAtual,
+    distancia:distanciaAtual,
+    total:c.reduce((s,i)=>s+i.price*i.qty,0)+(taxaAtual||0),
+    status:'novo',
+    criadoEm:serverTimestamp()
+  };
+  await setDoc(doc(db,"pedidos",pedido.id),pedido);
+
+  // PARABÉNS PELA EXCELENTE ESCOLHA
+  const primeiroNome = pedido.cliente.nome.split(' ')[0];
+  alert(`Parabéns pela excelente escolha, ${primeiroNome}! 🎉\nSeu pedido #${pedido.id} foi confirmado com sucesso.`);
+
+  localStorage.removeItem(CART_KEY);
+  location.href='index.html'
+}
 
 carregar();renderMolhos();renderCart();
 rua.addEventListener('input',calcDebounced);
 numero.addEventListener('input',calcDebounced);
 cidade.addEventListener('change',calcDebounced);
+pagamento.addEventListener('change',()=>{ troco.style.display = pagamento.value==='Dinheiro'? 'block' : 'none'; });
 </script>
 </body>
 </html>

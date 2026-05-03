@@ -950,21 +950,36 @@ export const PRODUCTS = {
         "25": 25.99
       }
     },
-    {
+
+   {
       "id": "gaucho6",
+      "title": "GAÚCHO 6 — Costela com requeijão e palmito",
+      "desc": "Costela com requeijão e palmito.",
+      "img": "img/gaucho6.png",
+      "sizes": {
+        "15": 22.99,
+        "25": 26.99
+      }
+    },
+
+
+
+
+    {
+      "id": "gaucho7",
       "title": "GAÚCHO 6 — Costela, Catupiry original",
       "desc": "Costela com Catupiry original.",
-      "img": "img/gaucho6.png",
+      "img": "img/gaucho7.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
       }
     },
     {
-      "id": "gaucho7",
-      "title": "GAÚCHO 7 — Costela, cheddar polenghi",
+      "id": "gaucho8",
+      "title": "GAÚCHO 8 — Costela, cheddar polenghi",
       "desc": "Costela com cheddar Polenghi.",
-      "img": "img/gaucho7.png",
+      "img": "img/gaucho8.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
@@ -1020,21 +1035,36 @@ export const PRODUCTS = {
         "25": 25.99
       }
     },
-    {
+
+
+  {
       "id": "lampiao6",
-      "title": "LAMPIÃO 6 — Carne seca, Catupiry original",
-      "desc": "Carne seca com Catupiry original.",
+      "title": "LAMPIÃO 6 — Carne seca com requeijão e oalmito",
+      "desc": "Carne seca com requeijão e palmito.",
       "img": "img/lampiao6.png",
+      "sizes": {
+        "15": 22.99,
+        "25": 26.99
+      }
+    },
+
+
+
+    {
+      "id": "lampiao7",
+      "title": "LAMPIÃO 7 — Carne seca, Catupiry original",
+      "desc": "Carne seca com Catupiry original.",
+      "img": "img/lampiao7.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
       }
     },
     {
-      "id": "lampiao7",
-      "title": "LAMPIÃO 7 — Carne seca, cheddar polenghi",
+      "id": "lampiao8",
+      "title": "LAMPIÃO 8 — Carne seca, cheddar polenghi",
       "desc": "Carne seca com cheddar Polenghi.",
-      "img": "img/lampiao7.png",
+      "img": "img/lampiao8.png",
       "sizes": {
         "15": 26.99,
         "25": 35.99
@@ -1053,114 +1083,316 @@ export const PRODUCTS = {
   ],
   "pasteis_doces": [
     {
-      "id": "romeu-julieta",
-      "title": "ROMEU E JULIETA — Goiabada, queijo mussrela",
-      "desc": "Goiabada com queijo mussarela.",
-      "img": "img/romeu-julieta.png",
-      "sizes": {
-        "15": 14.99,
-        "25": 18.99
-      }
-    },
-    {
-      "id": "doce-leite",
-      "title": "SÓ DOCE DE LEITE",
-      "desc": "só doce de leite.",
-      "img": "img/doce-leite.png",
-      "sizes": {
-        "15": 14.99,
-        "25": 18.99
-      }
-    },
-    {
-      "id": "choco1",
-      "title": "CHOCO 1 — Só chocolate ao leite",
-      "desc": "Chocolate ao leite.",
-      "img": "img/choco1.png",
-      "sizes": {
-        "15": 14.99,
-        "25": 17.99
-      }
-    },
-    {
-      "id": "choco2",
-      "title": "CHOCO 2 — Só chocolate branco",
-      "desc": " Só Chocolate branco.",
-      "img": "img/choco2.png",
-      "sizes": {
-        "15": 14.99,
-        "25": 17.99
-      }
-    },
-    {
-      "id": "choco3",
-      "title": "CHOCO 3 — Choco com Sonho de Valsa",
-      "desc": "Chocolate com bombom Sonho de Valsa.",
-      "img": "img/choco3.png",
-      "sizes": {
-        "15": 16.99,
-        "25": 19.99
-      }
-    },
-    {
-      "id": "choco4",
-      "title": "CHOCO 4 — Choco com Ouro Branco",
-      "desc": "Chocolate com bombom Ouro Branco.",
-      "img": "img/choco4.png",
-      "sizes": {
-        "15": 16.99,
-        "25": 19.99
-      }
-    },
-    {
-      "id": "ninho1",
-      "title": "NINHO 1 — Só leite Ninho",
-      "desc": "Só Leite Ninho.",
-      "img": "img/ninho1.png",
-      "sizes": {
-        "15": 15.99,
-        "25": 17.99
-      }
-    },
-    {
-      "id": "creme-avela1",
-      "title": "SÓ CREME DE AVELÃ",
-      "desc": "Só Creme de avelã.",
-      "img": "img/creme-avela1.png",
-      "sizes": {
-        "15": 21.99,
-        "25": 26.99
-      }
-    },
-    {
-      "id": "creme-avela-banana",
-      "title": "CREME DE AVELÃ COM BANANA",
-      "desc": "Creme de avelã com banana.",
-      "img": "img/creme-avela-banana.png",
-      "sizes": {
-        "15": 21.99,
-        "25": 26.99
-      }
-    },
-    {
-      "id": "creme-avela-coco",
-      "title": "CREME DE AVELÃ COM COCO",
-      "desc": "Creme de avelã com coco ralado.",
-      "img": "img/creme-avela-coco.png",
-      "sizes": {
-        "15": 21.99,
-        "25": 26.99
-      }
-    },
-    {
-      "id": "barra-chocolate",
-      "title": "BARRA CHOCOLATE (ao leite / branco) — 25CM",
-      "desc": "Barra de chocolate (ao leite ou branco) — somente 25cm.",
-      "img": "img/barra-chocolate.png",
-      "sizes": {
-        "25": 19.99
-      }
+      
+    "id": "romeu-e-julieta",
+    "title": "ROMEU E JULIETA",
+    "desc": "Goiabada, queijo.",
+    "img": "img/romeu-julieta.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
     }
+  },
+  {
+    "id": "banana-com-mussarela",
+    "title": "BANANA COM MUSSARELA",
+    "desc": "Banana com mussarela.",
+    "img": "img/banana-mussarela.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
+    }
+  },
+  {
+    "id": "so-doce-de-leite",
+    "title": "SÓ DOCE DE LEITE",
+    "desc": "Só doce de leite.",
+    "img": "img/doce-leite.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
+    }
+  },
+  {
+    "id": "doce-de-leite-mussarela-banana",
+    "title": "DOCE DE LEITE, MUSSARELA, BANANA",
+    "desc": "Doce de leite, mussarela, banana.",
+    "img": "img/doce-leite-mussarela-banana.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "madre1-doce-de-leite-banana",
+    "title": "MADRE 1 DOCE DE LEITE COM BANANA",
+    "desc": "Doce de leite com banana.",
+    "img": "img/madre1.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
+    }
+  },
+  {
+    "id": "madre2-doce-de-leite-pacoca",
+    "title": "MADRE 2 DOCE DE LEITE COM PAÇOCA",
+    "desc": "Doce de leite com paçoca.",
+    "img": "img/madre2.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
+    }
+  },
+  {
+    "id": "madre3-doce-de-leite-coco",
+    "title": "MADRE 3 DOCE DE LEITE COM COCO",
+    "desc": "Doce de leite com coco.",
+    "img": "img/madre3.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 18.99
+    }
+  },
+  {
+    "id": "madre4-doce-de-leite-banana-pacoca",
+    "title": "MADRE 4 DOCE DE LEITE, BANANA, PAÇOCA",
+    "desc": "Doce de leite, banana, paçoca.",
+    "img": "img/madre4.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "choco1-so-chocolate-ao-leite",
+    "title": "CHOCO 1 SÓ CHOCOLATE AO LEITE",
+    "desc": "Só chocolate ao leite.",
+    "img": "img/choco1.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 17.99
+    }
+  },
+  {
+    "id": "choco2-chocolate-ao-leite-banana",
+    "title": "CHOCO 2 CHOCOLATE AO LEITE COM BANANA",
+    "desc": "Chocolate ao leite com banana.",
+    "img": "img/choco2.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "choco3-sonho-de-valsa",
+    "title": "CHOCO 3 CHOCO AO LEITE, SONHO DE VALSA",
+    "desc": "Chocolate ao leite, Sonho de Valsa.",
+    "img": "img/choco3.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "choco4-ouro-branco",
+    "title": "CHOCO 4 CHOCO AO LEITE, OURO BRANCO",
+    "desc": "Chocolate ao leite, Ouro Branco.",
+    "img": "img/choco4.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "choco5-so-chocolate-branco",
+    "title": "CHOCO 5 SÓ CHOCOLATE BRANCO",
+    "desc": "Só chocolate branco.",
+    "img": "img/choco5.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 17.99
+    }
+  },
+  {
+    "id": "choco6-branco-sonho-de-valsa",
+    "title": "CHOCO 6 CHOCOLATE BRANCO, SONHO DE VALSA",
+    "desc": "Chocolate branco, Sonho de Valsa.",
+    "img": "img/choco6.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "choco7-branco-ouro-branco",
+    "title": "CHOCO 7 CHOCOLATE BRANCO, OURO BRANCO",
+    "desc": "Chocolate branco, Ouro Branco.",
+    "img": "img/choco7.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "bis1-choco-leite-bis-branco",
+    "title": "BIS 1 CHOCO AO LEITE COM BIS BRANCO",
+    "desc": "Chocolate ao leite com Bis branco.",
+    "img": "img/bis1.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "bis2-chocolate-branco-bis-preto",
+    "title": "BIS 2 CHOCOLATE BRANCO, BIS PRETO",
+    "desc": "Chocolate branco, Bis preto.",
+    "img": "img/bis2.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "bis3-beijinho-bis-preto",
+    "title": "BIS 3 BEIJINHO COM BIS PRETO",
+    "desc": "Beijinho com Bis preto.",
+    "img": "img/bis3.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "dois-amores",
+    "title": "DOIS AMORES (CHOCO AO LEITE / BRANCO)",
+    "desc": "Chocolate ao leite e chocolate branco.",
+    "img": "img/dois-amores.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "prestigio",
+    "title": "PRESTÍGIO CHOCO AO LEITE COM BEIJINHO",
+    "desc": "Chocolate ao leite com beijinho.",
+    "img": "img/prestigio.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 17.99
+    }
+  },
+  {
+    "id": "beijinho-coco",
+    "title": "BEIJINHO COM COCO RALADO",
+    "desc": "Beijinho com coco ralado.",
+    "img": "img/beijinho.png",
+    "sizes": {
+      "15": 14.99,
+      "25": 17.99
+    }
+  },
+  {
+    "id": "ninho1-so-leite-ninho",
+    "title": "NINHO 1 SÓ LEITE NINHO",
+    "desc": "Só leite Ninho.",
+    "img": "img/ninho1.png",
+    "sizes": {
+      "15": 15.99,
+      "25": 17.99
+    }
+  },
+  {
+    "id": "ninho2-ninho-banana",
+    "title": "NINHO 2 LEITE NINHO COM BANANA",
+    "desc": "Leite Ninho com banana.",
+    "img": "img/ninho2.png",
+    "sizes": {
+      "15": 16.99,
+      "25": 19.99
+    }
+  },
+  {
+    "id": "so-creme-avela-buello",
+    "title": "SÓ CREME DE AVELÃ (BUELLO)",
+    "desc": "Só creme de avelã Buello.",
+    "img": "img/creme-avela1.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "creme-avela-banana-buello",
+    "title": "CREME DE AVELÃ COM BANANA (BUELLO)",
+    "desc": "Creme de avelã Buello com banana.",
+    "img": "img/creme-avela-banana.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "creme-avela-coco-buello",
+    "title": "CREME DE AVELÃ COM COCO RALADO (BUELLO)",
+    "desc": "Creme de avelã Buello com coco ralado.",
+    "img": "img/creme-avela-coco.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "so-creme-avela-nutella",
+    "title": "SÓ CREME DE AVELÃ (NUTELLA)",
+    "desc": "Só creme de avelã Nutella.",
+    "img": "img/creme-avela1.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "nutella-banana",
+    "title": "NUTELLA COM BANANA",
+    "desc": "Nutella com banana.",
+    "img": "img/creme-avela-banana.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "nutella-coco",
+    "title": "NUTELLA COM COCO RALADO",
+    "desc": "Nutella com coco ralado.",
+    "img": "img/creme-avela-coco.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "pastel-hot-dog-doce",
+    "title": "PASTEL HOT-DOG DOCE",
+    "desc": "Banana, chocolate ao leite, batata palha.",
+    "img": "img/pastel-hot-dog-doce.png",
+    "sizes": {
+      "15": 21.99,
+      "25": 26.99
+    }
+  },
+  {
+    "id": "barra-chocolate",
+    "title": "BARRA CHOCOLATE (ao leite / branco)",
+    "desc": "Barra de chocolate (ao leite ou branco).",
+    "img": "img/barra-chocolate.png",
+    "sizes": {
+      "25": 19.99
+    }
+  }
+
   ],
   "pasteis_especiais": [
     {
@@ -1295,7 +1527,7 @@ export const PRODUCTS = {
     },
     {
       "id": "toscana1",
-      "title": "TOSCANA 1 — Calabresa, azeit., queij., orég.",
+      "title": "TOSCANA 1 — Calabresa, azeitona, queijo, orégano.",
       "desc": "Calabresa, azeitona, queijo e orégano.",
       "img": "img/toscana1.png",
       "sizes": {
@@ -1305,7 +1537,7 @@ export const PRODUCTS = {
     },
     {
       "id": "toscana2",
-      "title": "TOSCANA 2 — Calab., ovo, cebol., queij., orég.",
+      "title": "TOSCANA 2 — Calabresa, ovo, cebola, queijo, orégano.",
       "desc": "Calabresa, ovo, cebola, queijo e orégano.",
       "img": "img/toscana2.png",
       "sizes": {
@@ -1315,7 +1547,7 @@ export const PRODUCTS = {
     },
     {
       "id": "metro1",
-      "title": "METRÔ 1 — Carne, azeit., queij., tomat., orég.",
+      "title": "METRÔ 1 — Carne, azeitona, queijo, tomate, orégano",
       "desc": "Carne, azeitona, queijo, tomate e orégano.",
       "img": "img/metro1.png",
       "sizes": {
@@ -1325,7 +1557,7 @@ export const PRODUCTS = {
     },
     {
       "id": "metro2",
-      "title": "METRÔ 2 — Mussarela, req., bacon, milho",
+      "title": "METRÔ 2 — Mussarela, requeião, bacon, milho",
       "desc": "Mussarela, requeijão, bacon e milho.",
       "img": "img/metro2.png",
       "sizes": {
@@ -1335,7 +1567,7 @@ export const PRODUCTS = {
     },
     {
       "id": "lasanha",
-      "title": "LASANHA — Carne, presunto, queijo, orég.",
+      "title": "LASANHA — Carne, presunto, queijo, orégano",
       "desc": "Carne, presunto, queijo e orégano.",
       "img": "img/lasanha.png",
       "sizes": {
@@ -1355,7 +1587,7 @@ export const PRODUCTS = {
     },
     {
       "id": "alho-poro",
-      "title": "ALHO PORÓ — Mussarela, requeijão., bacon., milho",
+      "title": "ALHO PORÓ — Mussarela, requeijão, bacon, milho",
       "desc": "Alho-poró, mussarela, requeijão, bacon e milho.",
       "img": "img/alho-poro.png",
       "sizes": {
@@ -1365,7 +1597,7 @@ export const PRODUCTS = {
     },
     {
       "id": "pupunha-esp",
-      "title": "PUPUNHA — Palmito, req., bacon, milho",
+      "title": "PUPUNHA — Palmito, req, bacon, milho",
       "desc": "Palmito, requeijão, bacon e milho.",
       "img": "img/pupunha-esp.png",
       "sizes": {
@@ -1574,7 +1806,7 @@ export const PRODUCTS = {
   "bebidas": [
     {
       "id": "b1",
-      "title": "Refrigerante 350ml",
+      "title": "Coca-Cola 350ml",
       "price": 7.99,
       "desc": "Lata 350ml.",
       "img": "img/coca-lata-350.png"
@@ -1658,7 +1890,7 @@ export const PRODUCTS = {
     },
     {
       "id": "b13",
-      "title": "Coca Cola 2L",
+      "title": "Coca-Cola 2L",
       "price": 19.99,
       "desc": "Garrafa 2 litros.",
       "img": "img/Coca-2l.png"
@@ -1666,14 +1898,14 @@ export const PRODUCTS = {
     {
       "id": "b14",
       "title": "Heineken Long Neck 350ml",
-      "price": 10,
+      "price": 12.99,
       "desc": "Cerveja Heineken garrafa long neck 350ml.",
       "img": "img/heineken-350.png"
     },
     {
       "id": "b15",
       "title": "Budweiser Long Neck 350ml",
-      "price": 10,
+      "price": 12.99,
       "desc": "Cerveja Budweiser garrafa long neck 350ml.",
       "img": "img/budweiser-350.png"
     }
