@@ -109,6 +109,9 @@
     };
   }
 
+
+
+  
   // --- First User Interaction Detection ---
 
   function setupFirstInteractionDetection() {
@@ -191,7 +194,6 @@
   }
 })();</script>
 
-<script>(function(){'use strict';if(window.playablesSDK)return;var n='playablesGameEventHandler',t='_MetaPlayablesBridge',e=3,r=!1,i=!1,o=!1,a=0,s=window.requestAnimationFrame;function c(){return!!(window.webkit&&window.webkit.messageHandlers&&window.webkit.messageHandlers[n])}function u(){return!!(window[t]&&typeof window[t].postEvent==='function')}function l(){return!!(window.parent&&window.parent!==window)}function d(e,r){var i={type:e,payload:r||{},timestamp:Date.now()};if(c()){try{window.webkit.messageHandlers[n].postMessage(i)}catch(e){}return}if(u()){try{var o=r||{};o.__secureToken=window.__fbAndroidBridgeAuthToken||'',window[t].postEvent(e,JSON.stringify(o))}catch(e){}return}l()&&window.parent.postMessage(i,'*')}function f(){r||(a++,a>=e&&(r=!0,d('game_ready',{frame_count:a,detected_at:Date.now()})))}s&&(window.requestAnimationFrame=function(e){return r?s.call(window,e):s.call(window,function(n){a++,a>=e&&!r&&(r=!0,d('game_ready',{frame_count:a,detected_at:Date.now()})),e(n)})});var p=['touchstart','mousedown','keydown'];function h(){var e=p;function n(){i||(i=!0,d('user_interaction_start',null),e.forEach(function(e){document.removeEventListener(e,n,!0)}))}e.forEach(function(e){document.addEventListener(e,n,!0)})}'loading'===document.readyState?document.addEventListener('DOMContentLoaded',h):h(),window.addEventListener('error',function(e){o||(o=!0,d('error',{message:e.message||'Unknown',source:e.filename||'',lineno:e.lineno||0,colno:e.colno||0,auto_captured:!0}))}),window.addEventListener('unhandledrejection',function(e){if(!o){o=!0;var n=e.reason;d('error',{message:n instanceof Error?n.message:String(n),type:'unhandled_promise_rejection',auto_captured:!0})}}),window.playablesSDK={complete:function(e){d('game_ended',{score:e,completed:!0})},error:function(e){o||(o=!0,d('error',{message:e||'Unknown',auto_captured:!1}))},sendEvent:function(e,n){e&&'string'==typeof e&&d(e,n)}},s&&s.call(window,f)})();</script>
 <script>window.Intl=window.Intl||{};Intl.t=function(s){return(Intl._locale&&Intl._locale[s])||s;};</script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
@@ -204,7 +206,7 @@
     <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="successTitle" style="max-width:640px; flex-direction:column; align-items:center; text-align:center; gap:14px">
       <img id="successImg" src="img/sucesso.png" alt="Pedido finalizado com sucesso" style="width:220px;height:220px;object-fit:contain;border-radius:16px;background:#021522;box-shadow:0 10px 30px rgba(0,0,0,.5)">
       <div id="successTitle" style="font-weight:900;font-size:24px;color:var(--accent)">Pedido confirmado!</div>
-      <div class="muted" id="successMsg" style="font-size:15px">Seu pedido foi enviado para a cozinha e estÃ¡ sendo impresso.</div>
+      <div class="muted" id="successMsg" style="font-size:15px">Seu pedido foi enviado para a cozinha e está sendo impresso.</div>
       <button class="btn" id="okSuccess" type="button" style="width:220px">OK</button>
     </div>
   </div>
@@ -243,13 +245,13 @@
             <button data-key="1" type="button">1</button><button data-key="2" type="button">2</button><button data-key="3" type="button">3</button>
             <button data-key="4" type="button">4</button><button data-key="5" type="button">5</button><button data-key="6" type="button">6</button>
             <button data-key="7" type="button">7</button><button data-key="8" type="button">8</button><button data-key="9" type="button">9</button>
-            <button data-key="back" type="button">â«</button><button data-key="0" type="button">0</button><button data-key="clear" type="button">C</button>
+            <button data-key="back" type="button">⌫</button><button data-key="0" type="button">0</button><button data-key="clear" type="button">C</button>
           </div>
         </div>
         <div style="width:260px;display:flex;flex-direction:column;gap:10px;align-items:stretch">
           <button class="btn" id="saveQty" type="button">Salvar</button>
           <button class="btn secondary" id="cancelQty" type="button">Cancelar</button>
-          <div style="color:var(--muted);font-size:13px">Para quantidades grandes, use os botÃµes 0-9</div>
+          <div style="color:var(--muted);font-size:13px">Para quantidades grandes, use os botões 0-9</div>
         </div>
       </div>
     </div>
@@ -262,21 +264,21 @@
         </div>
         <div class="size-image-wrap">
           <img id="sizeImg" class="size-image" alt="" />
-          <div class="muted" style="text-align:center">Toque em uma opÃ§Ã£o para adicionar ao pedido.</div>
+          <div class="muted" style="text-align:center">Toque em uma opção para adicionar ao pedido.</div>
         </div>
       </div>
     </div>
     <div class="attract hidden" id="attract" role="dialog" aria-modal="true">
       <h1>Bem-vindo</h1>
-      <p>PeÃ§a rÃ¡pido e fÃ¡cil no nosso totem</p>
+      <p>Peça rápido e fácil no nosso</p>
       <button class="big-btn" id="startBtn" type="button" aria-label="Iniciar atendimento">Toque para Iniciar</button>
     </div>
   </div>
   <div class="footer-bar">
     <button class="btn cart-btn footer-cart" id="checkoutBtn" type="button" aria-label="Ver carrinho">
       <span class="cart-ico" aria-hidden="true">
-        <svg viewBox="0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
-          <path d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44C8.52 16.37 8.92 17 9.5 17h9v-2h-8.6l1.1-2h6.45c.75 0 1.41-.41 1.75-1.03L22 7H6.42l-.7-1.5C5.52 5.2 5.27 5 5H3V3h2c.83 0 1.55.52 1.83 1.3L7 4zm5 13c-1.1 0-2-.9-2-2s.9-2 2-2 2.9 2 2-.9 2-2 2zm-6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2.9 2 2-.9 2-2 2z"/>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+          <path d="M7 4h-2l-1 2h2l3.6 7.59-1.35 2.44C8.52 16.37 8.92 17 9.5 17h9v-2h-8.6l1.1-2h6.45c.75 0 1.41-.41 1.75-1.03L22 7H6.42l-.7-1.5C5.52 5.2 5.27 5 5H3V3h2c.83 0 1.55.52 1.83 1.3L7 4zm5 13c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm-6 0c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
         </svg>
       </span>
       <span class="cart-label">Ver carrinho</span>
@@ -294,7 +296,7 @@
 
   const btn = document.getElementById('btnPedidos');
   if (cli.nome && meus.length > 0) {
-    btn.innerHTML = `ð ${cli.nome.split(' ')[0]} â¢ ${meus.length} pedido${meus.length>1?'s':''}`;
+    btn.innerHTML = `👋 ${cli.nome.split(' ')[0]} • ${meus.length} pedido${meus.length>1?'s':''}`;
     btn.style.background = '#28a745';
     btn.style.color = '#fff';
   }
@@ -365,45 +367,38 @@
     });
   }
 
-
+  
+  
 function renderDestaques(){
   if(!destaquesGrid) return;
   const destaques = [
-    {...PRODUCTS.pasteis[0], cat:'pasteis', price:14.99 },
-    {...PRODUCTS.pasteis[9], cat:'pasteis', price:14.99 },
-    {...PRODUCTS.pasteis[16], cat:'pasteis', price:14.99 },
-    {...PRODUCTS.pasteis_especiais[0], cat:'pasteis_especiais', price:17.99 },
-    {...PRODUCTS.pasteis_especiais[7], cat:'pasteis_especiais', price:19.99 },
-    {...PRODUCTS.pasteis_doces[0], cat:'pasteis_doces', price:14.99 }
+    {...PRODUCTS.pasteis[0], cat:'pasteis' },
+    {...PRODUCTS.pasteis[9], cat:'pasteis' },
+    {...PRODUCTS.pasteis[16], cat:'pasteis' },
+    {...PRODUCTS.pasteis_especiais[0], cat:'pasteis_especiais' },
+    {...PRODUCTS.pasteis_especiais[7], cat:'pasteis_especiais' },
+    {...PRODUCTS.pasteis_doces[0], cat:'pasteis_doces' }
   ];
 
   destaquesGrid.innerHTML = destaques.map((p,i)=>{
     const price = p.sizes? Math.min(...Object.values(p.sizes)) : p.price;
     return `
-  <div class="destaque-card">
-    <div class="img-wrap" onclick="window._addDestaque('${p.id}','${p.cat}')">
-      <img src="${p.img}" alt="${p.title}">
-      ${i===0?'<div class="badge">Mais pedido</div>':''}
-    </div>
-    <div class="info" onclick="window._addDestaque('${p.id}','${p.cat}')">
-      <div class="price">${formatBRL(price)}</div>
-      <div class="title">${p.title.split(' — ')[0]}</div>
-    </div>
-    <button class="destaque-add" onclick="event.stopPropagation(); window._addDestaque('${p.id}','${p.cat}')">Adicionar</button>
-  </div>
-`;
+      <div class="destaque-card" onclick="window._addDestaque('${p.id}','${p.cat}')">
+        <div class="img-wrap">
+          <img src="${p.img}" alt="${p.title}" loading="lazy">
+          ${i===0?'<div class="badge">Mais pedido</div>':''}
+        </div>
+        <div class="info">
+          <div class="price">${formatBRL(price)}</div>
+          <div class="title">${p.title.split(' — ')[0]}</div>
+          <div class="destaque-btns">
+            <button class="destaque-add" onclick="event.stopPropagation(); window._addDestaque('${p.id}','${p.cat}')">Adicional</button>
+          </div>
+        </div>
+      </div>
+    `;
   }).join('');
 }
-
-
-
-
-
-
-
-
-
-
 
   window._addDestaque = (id, cat)=>{
     const p = (PRODUCTS[cat]||[]).find(x=>x.id===id);
@@ -461,6 +456,7 @@ function renderDestaques(){
         const img = document.createElement('img');
         img.alt = p.title;
         img.src = p.img || "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='400'><rect width='100%' height='100%' fill='%230a1420'/><text x='50%' y='50%' fill='%23a7b6c1' font-size='20' text-anchor='middle' dominant-baseline='middle'>Imagem</text></svg>";
+        img.loading = 'lazy';
         media.appendChild(img);
         card.appendChild(media);
 
@@ -508,7 +504,7 @@ function renderDestaques(){
   function showToast({title='Item adicionado', sub=''}={}){
     const el = document.createElement('div');
     el.className = 'toast';
-    el.innerHTML = `<div class="check">â</div><div><div class="title">${title}</div>${sub? `<div class="sub">${sub}</div>` : ``}</div>`;
+    el.innerHTML = `<div class="check">✓</div><div><div class="title">${title}</div>${sub? `<div class="sub">${sub}</div>` : ``}</div>`;
     toastWrap.appendChild(el);
     setTimeout(()=>{ el.remove(); }, 1900);
   }
@@ -637,7 +633,7 @@ function renderDestaques(){
   const successOverlay = document.getElementById('successOverlay');
   const okSuccessBtn = document.getElementById('okSuccess');
   let successTimer = null;
-  function showSuccess({title='Pedido confirmado!', msg='Seu pedido foi enviado para a cozinha e estÃ¡ sendo impresso.', img='img/sucesso.png', autoCloseMs=2500} = {}){
+  function showSuccess({title='Pedido confirmado!', msg='Seu pedido foi enviado para a cozinha e está sendo impresso.', img='img/sucesso.png', autoCloseMs=2500} = {}){
     document.getElementById('successTitle').textContent = title;
     document.getElementById('successMsg').textContent = msg;
     document.getElementById('successImg').src = img;
@@ -669,6 +665,10 @@ function renderDestaques(){
   resetIdleTimer();
   window.addToCart = addToCart; window.openQtyDialog = openQtyDialog;
   document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') { if(overlay.style.display === 'flex') closeQtyDialog(); if(sizeOverlay.style.display === 'flex') closeSizeDialog(); } resetIdleTimer(); });
-  </script>
+ 
+  
+ 
+ 
+ </script>
 </body>
 </html>

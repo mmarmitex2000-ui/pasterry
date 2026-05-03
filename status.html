@@ -36,7 +36,7 @@ input.tel{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backg
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, onSnapshot, collection, query, where, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, onSnapshot, collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDV9tPC5XNNmB_REgW1au2NtpP1ETtV1i0",
@@ -70,112 +70,19 @@ input.tel{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backg
 
   function renderPedido(p){
     const view = document.getElementById('view');
-    const statusMap = {
-      novo: 'Recebido pela loja',
-      preparando: 'Em fila de preparo',
-      saiu: 'Saiu para entrega',
-      entrega: 'Saiu para entrega',
-      entregue: 'Entregue',
-      cancelado: 'Cancelado'
-    };
-
-    const steps = [
-      {key:'novo', label:'Recebido pela loja'},
-      {key:'preparando', label:'Em fila de preparo'},
-      {key:'saiu', label:'Saiu para entrega'},
-      {key:'entregue', label:'Entregue'}
-    ];
-
-    const isCancelado = p.status === 'cancelado';
-    const statusReal = p.status === 'entrega'? 'saiu' : p.status;
-    const temRastreio = statusReal === 'saiu' && p.lat && p.lng;
-
-    const isActive = (stepKey) => {
-      if(isCancelado) return false;
-      if(stepKey === 'novo') return true;
-      if(stepKey === 'preparando') return ['novo','preparando','saiu','entregue'].includes(statusReal);
-      if(stepKey === 'saiu') return ['saiu','entregue'].includes(statusReal);
-      if(stepKey === 'entregue') return statusReal === 'entregue';
-      return false;
-    };
-
+    const statusMap = { novo: 'Recebido pela loja', preparando: 'Em fila de preparo', saiu: 'Saiu para entrega', entrega: 'Saiu para entrega', entregue: 'Entregue', cancelado: 'Cancelado' };
+    const steps = [ {key:'novo', label:'Recebido pela loja'}, {key:'preparando', label:'Em fila de preparo'}, {key:'saiu', label:'Saiu para entrega'}, {key:'entregue', label:'Entregue'} ];
+    const isCancelado = p.status === 'cancelado'; const statusReal = p.status === 'entrega'? 'saiu' : p.status; const temRastreio = statusReal === 'saiu' && p.lat && p.lng;
+    const isActive = (stepKey) => { if(isCancelado) return false; if(stepKey === 'novo') return true; if(stepKey === 'preparando') return ['novo','preparando','saiu','entregue'].includes(statusReal); if(stepKey === 'saiu') return ['saiu','entregue'].includes(statusReal); if(stepKey === 'entregue') return statusReal === 'entregue'; return false; };
     const whatsMsg = encodeURIComponent(`Olá, meu nome é ${p.cliente?.nome||''}. Pedido #${p.id.substring(0,6).toUpperCase()}, gostaria de falar com atendente.`);
-
-    const mapaHtml = temRastreio? `
-      <div class="card" style="padding:0;overflow:hidden;border:2px solid #28a745">
-        <div style="padding:12px 14px 8px">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>🛵 Rastreio ao vivo</strong>
-            <span style="font-size:11px;background:#28a745;padding:3px 8px;border-radius:10px">AO VIVO</span>
-          </div>
-          <div class="muted" style="font-size:12px">Motoboy: ${esc(p.motoboy||'a caminho')} • Atualizado agora</div>
-        </div>
-        <div id="mapa-rastreio"></div>
-      </div>` : '';
-
-    view.innerHTML = `
-      <h1>Seu pedido</h1>
-      <div class="muted">Pedido #${esc(p.id.substring(0,6).toUpperCase())} • ${esc(p.data)} <span class="pulse">• ao vivo</span></div>
-
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>Status</strong>
-          <span class="badge ${isCancelado?'cancelado':''}">${esc(statusMap[p.status]||'Recebido pela loja')}</span>
-        </div>
-        <div class="timeline">
-          ${steps.map(s=>`<div class="step ${isActive(s.key)?'active':''}">${esc(s.label)}</div>`).join('')}
-        </div>
-      </div>
-
-      ${mapaHtml}
-
-      <div class="card">
-        <strong>Detalhes</strong>
-        <div style="margin-top:8px">
-          ${(p.itens||[]).map(i=>`<div class="item"><span>${esc(i.qty||1)}x ${esc(i.title||i.nome)}</span><span>${money((i.price||0)*(i.qty||1))}</span></div>`).join('')}
-        </div>
-        <div style="margin-top:10px;padding-top:8px;border-top:1px solid #444">
-          <div class="row"><span>Subtotal</span><span>${money(p.subtotal)}</span></div>
-          <div class="row"><span>Taxa</span><span>${money(p.taxa||p.taxaEntrega||0)}</span></div>
-          <div class="row" style="font-weight:bold;font-size:16px;margin-top:6px"><span>Total</span><span>${money(p.total)}</span></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <strong>Pagamento</strong>
-        <div style="margin-top:6px;font-size:14px">${esc(p.pagamento||'Não informado')}${p.pagamento==='Dinheiro'&&p.troco?`<br>Troco: ${money(p.troco)}`:''}</div>
-      </div>
-
-      <div class="card aviso">
-        <strong>⚠️ Atenção</strong>
-        <div style="margin-top:6px;font-size:13px">Não recebemos pagamentos adiantados.<br>Pix apenas na máquina, o motoboy leva.</div>
-      </div>
-
-      <a href="https://wa.me/${WHATS_LOJA}?text=${whatsMsg}" target="_blank" class="btn whats">💬 Falar no WhatsApp</a>`;
-
-    if(temRastreio){
-      setTimeout(()=>{
-        if(mapa) mapa.remove();
-        mapa = L.map('mapa-rastreio', {zoomControl:false, dragging:true}).setView([p.lat, p.lng], 16);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(mapa);
-        const moto = L.divIcon({html:'<div style="font-size:28px">🛵</div>',iconSize:[28,28],className:''});
-        L.marker([p.lat, p.lng], {icon:moto}).addTo(mapa);
-      }, 50);
-    }
+    const mapaHtml = temRastreio? `<div class="card" style="padding:0;overflow:hidden;border:2px solid #28a745"><div style="padding:12px 14px 8px"><div style="display:flex;justify-content:space-between;align-items:center"><strong>🛵 Rastreio ao vivo</strong><span style="font-size:11px;background:#28a745;padding:3px 8px;border-radius:10px">AO VIVO</span></div><div class="muted" style="font-size:12px">Motoboy: ${esc(p.motoboy||'a caminho')} • Atualizado agora</div></div><div id="mapa-rastreio"></div></div>` : '';
+    view.innerHTML = `<h1>Seu pedido</h1><div class="muted">Pedido #${esc(p.id.substring(0,6).toUpperCase())} <span class="pulse">• ao vivo</span></div><div class="card"><div style="display:flex;justify-content:space-between;align-items:center"><strong>Status</strong><span class="badge ${isCancelado?'cancelado':''}">${esc(statusMap[p.status]||'Recebido pela loja')}</span></div><div class="timeline">${steps.map(s=>`<div class="step ${isActive(s.key)?'active':''}">${esc(s.label)}</div>`).join('')}</div></div>${mapaHtml}<div class="card"><strong>Detalhes</strong><div style="margin-top:8px">${(p.itens||[]).map(i=>`<div class="item"><span>${esc(i.qty||1)}x ${esc(i.title||i.nome)}</span><span>${money((i.price||0)*(i.qty||1))}</span></div>`).join('')}</div><div style="margin-top:10px;padding-top:8px;border-top:1px solid #444"><div class="row"><span>Subtotal</span><span>${money(p.subtotal)}</span></div><div class="row"><span>Taxa</span><span>${money(p.taxa||p.taxaEntrega||0)}</span></div><div class="row" style="font-weight:bold;font-size:16px;margin-top:6px"><span>Total</span><span>${money(p.total)}</span></div></div></div><div class="card"><strong>Pagamento</strong><div style="margin-top:6px;font-size:14px">${esc(p.cliente?.pagamento||p.pagamento||'Não informado')}${(p.cliente?.pagamento||p.pagamento)==='Dinheiro'&&(p.cliente?.troco||p.troco)?`<br>Troco para: ${esc(p.cliente?.troco||p.troco)}`:''}</div></div><div class="card aviso"><strong>⚠️ Atenção</strong><div style="margin-top:6px;font-size:13px">Não recebemos pagamentos adiantados.<br>Pix apenas na máquina, o motoboy leva.</div></div><a href="https://wa.me/${WHATS_LOJA}?text=${whatsMsg}" target="_blank" class="btn whats">💬 Falar no WhatsApp</a><button class="btn ghost" onclick="location.href='status.html'">← Ver todos os pedidos</button>`;
+    if(temRastreio){ setTimeout(()=>{ if(mapa) mapa.remove(); mapa = L.map('mapa-rastreio', {zoomControl:false, dragging:true}).setView([p.lat, p.lng], 16); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(mapa); const moto = L.divIcon({html:'<div style="font-size:28px">🛵</div>',iconSize:[28,28],className:''}); L.marker([p.lat, p.lng], {icon:moto}).addTo(mapa); }, 50); }
   }
 
   async function iniciar(){
     const view = document.getElementById('view');
     view.innerHTML = '<div style="text-align:center;padding:20px;opacity:.6">Carregando...</div>';
-
-    if(!id){
-      const cli = getCliente();
-      if(cli.telefone){
-        const q = query(collection(db,"pedidos"), where("cliente.telefone","==",onlyDigits(cli.telefone)), limit(1));
-        const snap = await getDocs(q);
-        if(!snap.empty){ id = snap.docs[0].id; history.replaceState(null,'',`status.html?id=${id}`); }
-      }
-    }
 
     if(id){
       if(unsubscribe) unsubscribe();
@@ -183,34 +90,42 @@ input.tel{width:100%;padding:12px;border-radius:10px;border:1px solid #444;backg
         if(snap.exists()) {
           const p = {id:snap.id,...snap.data()};
           renderPedido(p);
-
           const statusReal = p.status === 'entrega'? 'saiu' : p.status;
           if(statusReal === 'saiu' && ultimoStatus!== 'saiu') {
             new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg').play().catch(()=>{});
             navigator.vibrate?.([200,100,200]);
-            if(Notification.permission === 'granted') {
-              new Notification('🛵 Saiu para entrega!', {
-                body: `Pedido #${p.id.substring(0,6).toUpperCase()} está a caminho`,
-                icon: 'https://i.imgur.com/8Km9tLL.png'
-              });
-            }
+            if(Notification.permission === 'granted') { new Notification('🛵 Saiu para entrega!', { body: `Pedido #${p.id.substring(0,6).toUpperCase()} está a caminho`, icon: 'https://i.imgur.com/8Km9tLL.png' }); }
             document.body.style.background = '#0f3d2e';
           }
           ultimoStatus = statusReal;
-        }
-        else view.innerHTML = '<h1>Pedido não encontrado</h1>';
+        } else view.innerHTML = '<h1>Pedido não encontrado</h1>';
       });
       return;
     }
 
-    view.innerHTML = `<h1>Meus Pedidos</h1>
-      <div class="card"><input class="tel" id="tel" placeholder="(11) 99999-9999" oninput="this.value=formatTelBR(this.value)"><button class="btn" id="btn">Ver pedido</button></div>`;
-    document.getElementById('btn').onclick = ()=>{
-      const tel = onlyDigits(document.getElementById('tel').value);
-      if(tel.length<10) return alert('Telefone inválido');
-      setCliente({...getCliente(), telefone:tel});
-      location.reload();
-    };
+    const cli = getCliente();
+    let tel = cli.telefone? onlyDigits(cli.telefone) : null;
+
+    if(!tel){
+      view.innerHTML = `<h1>Meus Pedidos</h1><div class="card"><input class="tel" id="tel" placeholder="(11) 99999-9999" oninput="this.value=formatTelBR(this.value)"><button class="btn" id="btn">Ver meus pedidos</button></div>`;
+      document.getElementById('btn').onclick = ()=>{ const t = onlyDigits(document.getElementById('tel').value); if(t.length<10) return alert('Telefone inválido'); setCliente({...getCliente(), telefone:t}); location.reload(); };
+      return;
+    }
+
+    try {
+      const q = query(collection(db,"pedidos"), where("cliente.telefone","==",tel), orderBy("criadoEm","desc"));
+      const snap = await getDocs(q);
+
+      if(snap.empty){
+        view.innerHTML = `<h1>Meus Pedidos</h1><div class="card">Nenhum pedido encontrado para ${formatTelBR(tel)}<br><small>Faça um pedido com o carrinho novo</small><br><button class="btn ghost" style="margin-top:10px" onclick="localStorage.removeItem('${CLIENTE_KEY}');location.reload()">Trocar número</button></div>`;
+        return;
+      }
+
+      view.innerHTML = `<h1>Meus Pedidos</h1><div class="muted">${snap.size} pedidos • ${formatTelBR(tel)}</div>` + snap.docs.map(d=>{ const p = d.data(); const data = p.criadoEm?.toDate? p.criadoEm.toDate().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : ''; return `<div class="card" onclick="location.href='status.html?id=${d.id}'" style="cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center"><strong>#${d.id.substring(0,6).toUpperCase()}</strong><span class="badge ${p.status==='cancelado'?'cancelado':''}">${p.status}</span></div><div class="muted" style="margin:6px 0">${data} • ${p.itens?.length||0} itens</div><div style="display:flex;justify-content:space-between;align-items:center"><span>${(p.itens||[]).slice(0,2).map(i=>`${i.qty}x ${i.title||i.nome}`).join(', ')}${p.itens?.length>2?'...':''}</span><strong>${money(p.total)}</strong></div></div>`; }).join('') + `<button class="btn ghost" onclick="localStorage.removeItem('${CLIENTE_KEY}');location.reload()">Trocar número</button>`;
+
+    } catch(err) {
+      view.innerHTML = `<h1>Aguarde o índice</h1><div class="card" style="border-left:4px solid #ffcc00">O Firebase ainda está criando o índice.<br>Volte em 2 minutos e recarregue.<br><br><small>${err.message}</small></div><button class="btn" onclick="location.reload()">Tentar novamente</button>`;
+    }
   }
 
   iniciar();
